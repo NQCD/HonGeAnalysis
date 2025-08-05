@@ -51,10 +51,16 @@ function plot_surfaces_DFT!(fig, ax, parameter_dict::Dict{Symbol,Float64}, x_ang
     lines!(ax, DFT[:,1], y_DFT, label="DFT PES",linestyle=:dash, color=:blue, linewidth=3)
     ## --------------------- ##
 
+    indices_adiabatic = findall(x -> x >= 1, x_ang)
+
+    indices_DFT = findall(x -> x >= 1, DFT[:,1])
+
     energies_match_DFT = energies_raw_match_DFT[1] .+ U_0s_match_DFT
 
-    rmse = sqrt(mean((y_DFT .- energies_match_DFT).^2))
+    energies_match_DFT_bigger_1 = energies_match_DFT[indices_DFT]
 
-    Label(fig, "RMSE:$(@sprintf("%.2f", rmse * 1000)) meV"; tellwidth=false, tellheight=false, valign=:bottom, halign=:right, padding=(5,5,5,5), fontsize=24)
+    rmse = sqrt(mean((y_DFT[indices_DFT] .- energies_match_DFT_bigger_1).^2))
+
+    Label(fig, "RMSE:$(@sprintf("%.2f", rmse * 1000)) meV"; tellwidth=false, tellheight=false, valign=:bottom, halign=:right, padding=(5,5,40,5), fontsize=24)
 
 end

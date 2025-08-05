@@ -74,6 +74,6 @@ rowgap!(fig.layout, 0)
 linkxaxes!(ax1, ax2)
 
 
-save(projectdir("plots/DOS_bath", "DOS_bath_discretisation_compare_test.pdf"),fig)
+#save(projectdir("plots/DOS_bath", "DOS_bath_discretisation_compare_test.pdf"),fig)
 
 fig

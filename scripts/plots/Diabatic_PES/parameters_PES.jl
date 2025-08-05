@@ -25,7 +25,7 @@ global PES_params = Dict{String,Any}(
     "nstates" => 150,
     "width" => 50,
     "sd" => 0.1, # Standard deviation for the Density of States
-    "couplings_rescale" => 1.95,
+    "couplings_rescale" => 2.5,
     "parameters_choice" => :Default, # Lifted or :Default
 )
 @unpack x_ang, x_Mulliken_ang, bandgap, centre, diabaticmodel, discretisation, nstates, width, sd, couplings_rescale, parameters_choice = PES_params
@@ -37,7 +37,7 @@ bandmax = (width/2 + centre) # unit is eV
 x = austrip.(x_ang .* u"Å");
 
 
-dft_restatom_path = "data/H_on_Ge(111)/DFT_HGe111_restatom.txt"
+dft_restatom_path = "data/ab-inito_cals/DFT_HGe111_restatom.txt"
 
 """
 Selection of Parameters Dictionary for the Diabatic Model

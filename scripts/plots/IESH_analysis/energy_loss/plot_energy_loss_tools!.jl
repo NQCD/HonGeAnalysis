@@ -36,15 +36,22 @@ function plot_exp_inelastic_data!(ax, incident_energy)
     H_Ge_data_inelastic_x = H_Ge_data_inelastic[:, 1]
     H_Ge_data_inelastic_y = H_Ge_data_inelastic[:, 2]
 
+    H_Ge_data_whole_x = H_Ge_data[:, 1]
+    H_Ge_data_whole_y = H_Ge_data[:, 2]
+
     interp = LinearInterpolation(H_Ge_data_inelastic_x, H_Ge_data_inelastic_y)
 
-    integration = quadgk(interp, minimum(H_Ge_data_inelastic_x), maximum(H_Ge_data_inelastic_x))[1]
+    interp_whole = LinearInterpolation(H_Ge_data_whole_x, H_Ge_data_whole_y)
 
-    scatter!(ax, H_Ge_data[:, 1], H_Ge_data[:, 2], color=:white, marker=:circle, markersize=15, label = "H/Ge Experiment", strokewidth = 2)
+    integration_inelastic = quadgk(interp, minimum(H_Ge_data_inelastic_x), maximum(H_Ge_data_inelastic_x))[1]
+
+    integration_whole = quadgk(interp_whole, minimum(H_Ge_data_whole_x), maximum(H_Ge_data_whole_x))[1]
+
+    scatter!(ax, H_Ge_data[:, 1], H_Ge_data[:, 2] ./ integration_whole, color=:white, marker=:circle, markersize=15, label = "H/Ge Experiment", strokewidth = 2)
 
     #lines!(ax, H_Ge_data_inelastic_x, interp.(H_Ge_data_inelastic_x), color=colormap[2], linewidth=3, label="Interpolation")
 
-    return integration
+    return integration_inelastic ./ integration_whole
 end
 
 """
@@ -82,11 +89,11 @@ experimental points and rescales the KDE plot using the experimental integral.
 - Prints information about the number of events.
 """
 
-function plot_exp_param_dist_csv!(fig, ax,params; is_exp_plot=true)
+function plot_exp_param_dist_csv!(fig, ax,params; is_exp_plot=true, path = "sims/Individual-Large", color_number = 3, saving = false)
 
     params_savename = savename(params)
 
-    kinetic_loss_path = joinpath(datadir("sims/Individual-Large", params_savename), "scattered_kinetic_loss")
+    kinetic_loss_path = joinpath(datadir(path, params_savename), "scattered_kinetic_loss")
     isdir(kinetic_loss_path) || error("Directory not found: $kinetic_loss_path")
 
     loss_folder_existed_path = glob("*.csv", kinetic_loss_path)
@@ -106,26 +113,37 @@ function plot_exp_param_dist_csv!(fig, ax,params; is_exp_plot=true)
     combined_data = vcat(all_data...)
     energy_loss = combined_data.OutputKineticLossEV
 
+    @info "Total trajectories of incident energy $(params["incident_energy"]) eV: $(length(energy_loss))"
+
     if true # filter out those zero energy loss
         energy_loss = filter(x -> x > 0.1, energy_loss)
     end
 
+    if saving
+        save_txt_path = projectdir("figure_data", "fig_6", "IESH_energyloss_$(params["incident_energy"])_eV.txt")
+        headers = "EnergyLoss(eV)"
+        data = energy_loss
+        save_values2txt(save_txt_path, data; headers = headers)
+        @info "Saved energy loss data to $save_txt_path"
+    else
+        @info "Not saving energy loss data, set saving = true to save"
+    end
     n_loss = length(energy_loss); @unpack incident_energy = params
-    @info "number of $(params["method"]) events $n_loss for incident_energy $incident_energy eV"
+    @info "number of $(params["method"]) inelastic events $n_loss for incident_energy $incident_energy eV"
 
     ## Plotting the experimental data and area under the inelastic peak
     is_exp_plot && (inelastic_intergation = plot_exp_inelastic_data!(ax,incident_energy))
 
     k = kde(energy_loss, Normal(0, 0.02))
 
-    lines!(ax, k.x, k.density .* inelastic_intergation , color=colormap[3], linewidth=3, label="IESH")
+    lines!(ax, k.x, k.density .* 1 , color=colormap[color_number], linewidth=3, label="IESH")
 
-    interp = LinearInterpolation(k.x, k.density .* inelastic_intergation)
+    interp = LinearInterpolation(k.x, k.density .* 1)
 
     IESH_integration = quadgk(interp, minimum(k.x), maximum(k.x))[1]
 
     @info "IESH integration: $IESH_integration"
-    @info "Inelastic peak integration: $inelastic_intergation"
+    @info "Inelastic peak experiments integration: $inelastic_intergation"
 
 
 end

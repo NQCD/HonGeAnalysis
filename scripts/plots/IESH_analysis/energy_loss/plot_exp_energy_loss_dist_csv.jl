@@ -90,7 +90,7 @@ all_params = Dict{String, Any}(
     "impuritymodel" => :Hokseon,
     "method" => [:AdiabaticIESH],
     "incident_energy" => [0.99,1.92,6.17], #collect(0.2:0.025:0.8), #collect(0.25:0.25:5)
-    "couplings_rescale" => [1.95],
+    "couplings_rescale" => [2.5],
     "centre" => [0],
     "gap" => [0.49],
     "decoherence"=>[:EDC],
@@ -105,7 +105,7 @@ end
 
 
 
-function plot_exp_energy_loss_dist_csv(params_list)
+function plot_exp_energy_loss_dist_csv(params_list; saving = false)
     # Create your figure with Minion Pro as the default font
     fig = Figure(
         size = (HokseonPlots.RESOLUTION[1] * 3, 4.5 * HokseonPlots.RESOLUTION[2]),
@@ -166,7 +166,7 @@ function plot_exp_energy_loss_dist_csv(params_list)
     Label_list = ["a", "b", "c", "d", "e", "f"]
 
     for (i, (ax, params)) in enumerate(zip(axes, params_list))
-        plot_exp_param_dist_csv!(fig[i,1], ax, params; is_exp_plot=true)
+        plot_exp_param_dist_csv!(fig[i,1], ax, params; is_exp_plot=true, saving)
         vlines!(ax, [0.49], color=:black, linestyle=:dash, linewidth=2, label="Band Gap = 0.49 eV")
         i == 1 && Legend(fig[1,1], ax, tellwidth=false, tellheight=false, valign=:top, halign=:center, margin=(0, 0, 0, 0), orientation=:vertical)
         Label(fig[i,1], "Eᵢ = $(params["incident_energy"]) eV"; tellwidth=false, tellheight=false, valign=:top, halign=:right, padding=(10,10,10,10),fontsize=25)
@@ -190,7 +190,11 @@ function plot_exp_energy_loss_dist_csv(params_list)
     return fig
 end
 
-#save(plotsdir("Energy_loss","Exp_IESH_incident_energies_dist.pdf"), plot_exp_energy_loss_dist_csv(params_list))
-plot_exp_energy_loss_dist_csv(params_list)
+
+
+#save(plotsdir("Exp_IESH_incident_energies_dist.pdf"), plot_exp_energy_loss_dist_csv(params_list))
+
+saving = true
+plot_exp_energy_loss_dist_csv(params_list; saving)
 
 

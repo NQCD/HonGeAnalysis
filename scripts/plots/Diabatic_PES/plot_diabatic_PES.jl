@@ -23,8 +23,8 @@ colormap = HokseonPlots.NICECOLORS
 
 
 function plot_molecular_potentials(parameter_dict,x_ang)
-    ylimitsup = [30]
-    ylimitslow = [-5]
+    ylimitsup = [10]
+    ylimitslow = [-2]
     fig = Figure(figure_padding=(1, 2, 1, 4), 
                  fonts=(;regular=projectdir("fonts", "MinionPro-Capt.otf")), 
                  size=(HokseonPlots.RESOLUTION[1]*2, HokseonPlots.RESOLUTION[2]*3), fontsize=17)
@@ -57,13 +57,13 @@ function plot_molecular_potentials(parameter_dict,x_ang)
     lines!(ax1, x_ang, hokseon_hybrid, color=COLORS[2], linewidth=2.5, label=L"A (x)")
 
 
-    Legend(fig[1,1], ax1, tellwidth=false, tellheight=false, valign=:top, halign=:right, margin=(5, 5, 5, 5), orientation=:horizontal)
-    Label(fig[1,1], latexstring("\$|U_1(5 Å) - U_0(5 Å)| ≈ $(@sprintf("%.3f", affinity_ionization))\$ eV"); tellwidth=false, tellheight=false, valign=:bottom, halign=:right, padding=(5,5,5,5), fontsize=17)
+    Legend(fig[1,1], ax1, tellwidth=false, tellheight=false, valign=:bottom, halign=:right, margin=(5, 5, 5, 5), orientation=:horizontal)
+    #Label(fig[1,1], latexstring("\$|U_1(5 Å) - U_0(5 Å)| ≈ $(@sprintf("%.3f", affinity_ionization))\$ eV"); tellwidth=false, tellheight=false, valign=:bottom, halign=:right, padding=(5,5,5,5), fontsize=17)
     
     return fig
 end
 
 x_ang = range(0, 5, length=200)
 
-#save(plotsdir("PES", "Diabatic_PES.pdf"), plot_molecular_potentials(chosen_dict,x_ang))
+save(plotsdir("PES", "Diabatic_PES.pdf"), plot_molecular_potentials(chosen_dict,x_ang))
 plot_molecular_potentials(chosen_dict,x_ang)

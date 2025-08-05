@@ -42,7 +42,7 @@ all_params = Dict{String, Any}(
     "impuritymodel" => :Hokseon,
     "method" => [:AdiabaticIESH],
     "incident_energy" => [0.37], #collect(0.2:0.025:0.8), #collect(0.25:0.25:5)
-    "couplings_rescale" => [1.95],
+    "couplings_rescale" => [2.5],
     "centre" => [0],
     "gap" => [0.49],
     "decoherence"=>[:EDC],
@@ -168,16 +168,28 @@ function plot_energy_loss_hist_csv(params_list::Vector{Dict{String, Any}}; Scatt
         combined_data = vcat(all_data...)
         energy_loss = combined_data.OutputKineticLossEV
 
+        @info "Total trajectories of incident energy $incident_energy eV: $(length(energy_loss))"
+
         if incident_energy > gap # filter out those zero energy loss
             energy_loss = filter(x -> x > 0.1, energy_loss)
         end
         n_loss = length(energy_loss)
-        @info "number of events $n_loss"
+        @info "number of non-zero losses events $n_loss"
 
         k = kde(energy_loss, Normal(0, 0.00005))
 
         lines!(ax, k.x, k.density .* inelastic_intergation , color=colormap[3], linewidth=3, label="IESH")
         #density!(ax, energy_loss , direction = :x, bandwidth = 0.0005,label=temlabel[i],  color=colormap[i+3])
+        save_txt_path = projectdir("figure_data", "fig_5", "IESH_energyloss_$(incident_energy)_eV.txt")
+        headers = "EnergyLoss(eV)"
+        data = energy_loss
+        if saving == true
+            save_values2txt(save_txt_path, data; headers = headers)
+            @info "Saved energy loss data to $save_txt_path"
+        else
+            @info "Not saving energy loss data, set saving = true to save"
+        end
+
 
         incident_energy > gap && plot_exp_inelastic_data!(ax, incident_energy)
     end
@@ -195,8 +207,9 @@ end
 
 
 is_exp_plot = true
+saving = true  # save the figure value into the txt file in figure_data/fig_5 folder or not
 @unpack incident_energy = params_list[1]
-#save(plotsdir("Energy_loss", "Exp_IESH_incident_energy_$(incident_energy)_dist.pdf"), plot_energy_loss_hist_csv(params_list; is_exp_plot))
+save(plotsdir("Energy_loss", "Exp_IESH_incident_energy_$(incident_energy)_dist.pdf"), plot_energy_loss_hist_csv(params_list; is_exp_plot))
 plot_energy_loss_hist_csv(params_list; is_exp_plot)
 
 

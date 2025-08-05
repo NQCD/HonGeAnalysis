@@ -4,7 +4,7 @@ using DrWatson
 all_params = Dict{String, Any}(
     "trajectories" => [1],
     "nstates" => [150],
-    "dt" => [0.05],
+    "dt" => [0.01],
     "width" => [50],
     "mass" => [1.00784], # Hydrogen atomic mass
     "temperature" => [300.0],
@@ -13,7 +13,7 @@ all_params = Dict{String, Any}(
     "impuritymodel" => :Hokseon,
     "method" => [:EhrenfestNA],
     "incident_energy" => collect(0.2:0.025:0.8),#,collect(0.625:0.025:0.675),
-    "couplings_rescale" => [1.95],
+    "couplings_rescale" => [2.5],
     "centre" => [0],
     "gap" => [0.49],
     "is_Wigner_initial" => false,

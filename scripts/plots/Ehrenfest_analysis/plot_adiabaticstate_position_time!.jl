@@ -24,7 +24,7 @@ function params2result1sttraj(params)
         results = filter_out_outputs(results, filter_out_property, filter_out_target) # filter out the given filter_out_target in the property
     end
 
-    return results[key][1]
+    return results[key][1], incident_energy
 
 end
 
@@ -35,7 +35,7 @@ end
 
 function plot_adiabatic_state_population_time_incident!(ax,params)
 
-    result_1st_traj = params2result1sttraj(params)
+    result_1st_traj,incident_energy = params2result1sttraj(params)
 
     AdiabaticPopulation_time = result_1st_traj["OutputAdiabaticPopulation"]
 
@@ -50,18 +50,36 @@ function plot_adiabatic_state_population_time_incident!(ax,params)
     lines!(ax, times, grounstate_proportion_time, color=:black, label = "Ground State", linewidth = 3)
     lines!(ax, times, first_exited_proportion_time, color=:black, label = "First Excited State", linewidth = 3, linestyle = :dash)
 
-    
+    save_txt_path = projectdir("figure_data", "fig_4", "Ehrenfest_adiabatic_state_population_time_incident_$(incident_energy)_eV.txt")
+    headers = "Time(fs) GroundStateProportion FirstExitedProportion"
+    data = hcat(times, grounstate_proportion_time, first_exited_proportion_time)
+    if saving == true
+        save_values2txt(save_txt_path, data; headers = headers)
+        @info "Saved adiabatic state population time data to $save_txt_path"
+    else
+        @info "Not saving adiabatic state population time data, set saving = true to save"
+    end
 end
 
 function plot_position_time_incident!(ax,params)
     
-    result_1st_traj = params2result1sttraj(params)
+    result_1st_traj, incident_energy = params2result1sttraj(params)
 
     position = vec(ustrip.(auconvert.(u"Å",result_1st_traj["OutputPosition"])))
 
     times = ustrip.(auconvert.(u"fs",result_1st_traj["Time"]))
 
     lines!(ax, times, position, color=:red, label = "H Atom Position", linewidth = 2)
+
+    save_txt_path = projectdir("figure_data", "fig_4", "Ehrenfest_position_time_incident_$(incident_energy)_eV.txt")
+    headers = "Time(fs) Position(Å)"
+    data = hcat(times, position)
+    if saving == true
+        save_values2txt(save_txt_path, data; headers = headers)
+        @info "Saved position time data to $save_txt_path"
+    else
+        @info "Not saving position time data, set saving = true to save"
+    end
 end
 
 

@@ -2,7 +2,7 @@ using DrWatson
 
 ### Parameters ###
 all_params = Dict{String, Any}(
-    "trajectories" => [500],
+    "trajectories" => [1000],
     "nstates" => [150],
     "dt" => [0.05],
     "width" => [50],
@@ -13,7 +13,7 @@ all_params = Dict{String, Any}(
     "impuritymodel" => :Hokseon,
     "method" => [:AdiabaticIESH],
     "incident_energy" => collect(0.2:0.025:0.8), #collect(0.2:0.025:0.8), #collect(0.25:0.25:5)
-    "couplings_rescale" => [1.95],
+    "couplings_rescale" => [2.5],
     "centre" => [0],
     "gap" => [0.49],
     "decoherence"=>[:EDC],

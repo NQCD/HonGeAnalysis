@@ -34,7 +34,7 @@ It searches for the input `method` (converted to a string) within a predefined l
 
 
 
-function methods_to_foldernames(method::Symbol; objective_methodfoldernames::Vector{String} = ["IESH", "Ehrenfest", "MDEF"])
+function methods_to_foldernames(method::Symbol; objective_methodfoldernames::Vector{String} = ["IESH", "Ehrenfest", "MDEF", "FSSH"])
     index = findfirst(label -> occursin(label, string(method)), objective_methodfoldernames)
     return index !== nothing ? objective_methodfoldernames[index] : error("Your input method $method is not included in your objective method foldernames $objective_methodfoldernames")
 end

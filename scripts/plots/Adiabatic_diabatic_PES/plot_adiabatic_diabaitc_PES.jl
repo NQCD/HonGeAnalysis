@@ -35,11 +35,11 @@ using LaTeXStrings
 """
 
 function plot_merged_PES(parameter_dict,DFT; groundstate_align_zero::Bool=false, reduce_PES::Bool=false, x_ang)
-    ylimitslow = [-3,-5]
-    ylimitsup = [7,30]
+    ylimitslow = [-2.4,-5]
+    ylimitsup = [2.4,15]
 
     fig = Figure(
-    figure_padding=(4, 8, 1, 8),
+    figure_padding=(4, 12, 1, 12),
     fonts=(regular=projectdir("fonts", "MinionPro-Capt.otf"),),
     size=(HokseonPlots.RESOLUTION[1]*2, HokseonPlots.RESOLUTION[2]*3),
     fontsize=17,
@@ -50,7 +50,7 @@ function plot_merged_PES(parameter_dict,DFT; groundstate_align_zero::Bool=false,
     # Ensure no x-axis decorations on the top plot (ax2)
     ax2 = Axis(fig[1,1];
         xlabel="", # No x-label
-        limits=(0, 5, ylimitslow[2], ylimitsup[2]),
+        limits=(0.6, 5, ylimitslow[2], ylimitsup[2]),
         xgridvisible = false,
         ygridvisible = false,
         xticksvisible = false, # Hide x-ticks
@@ -64,7 +64,7 @@ function plot_merged_PES(parameter_dict,DFT; groundstate_align_zero::Bool=false,
     # Ensure x-axis decorations ARE present on the bottom plot (ax1)
     ax1 = Axis(fig[2,1];
         xlabel="x / Å", # Keep x-label
-        limits=(0, 5, ylimitslow[1], ylimitsup[1]),
+        limits=(0.6, 5, ylimitslow[1], ylimitsup[1]),
         xgridvisible = false,
         ygridvisible = false,
         xticksmirrored = false, # No top ticks
@@ -138,5 +138,5 @@ DFT = readdlm(dft_restatom_path)[:,3:4]
 
 x_ang = range(0, 5, length=200)
 
-#save(plotsdir("PES", "Adiabatic_Diabatic_PES_DFT.pdf"), plot_merged_PES(chosen_dict,DFT;groundstate_align_zero,reduce_PES, x_ang))
+#save(plotsdir("PES", "Adiabatic_Diabatic_PES_DFT_test.pdf"), plot_merged_PES(chosen_dict,DFT;groundstate_align_zero,reduce_PES, x_ang))
 plot_merged_PES(chosen_dict,DFT;groundstate_align_zero,reduce_PES, x_ang)

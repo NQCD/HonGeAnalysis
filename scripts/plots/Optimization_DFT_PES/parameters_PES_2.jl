@@ -25,7 +25,7 @@ global PES_params = Dict{String,Any}(
     "nstates" => 150,
     "width" => 20,
     "sd" => 0.1, # Standard deviation for the Density of States
-    "couplings_rescale" => 2.5,
+    "couplings_rescale" => 3.0,
     "parameters_choice" => :Default, # Lifted or :Default
 )
 @unpack x_ang, x_Mulliken_ang, bandgap, centre, diabaticmodel, discretisation, nstates, width, sd, couplings_rescale, parameters_choice = PES_params

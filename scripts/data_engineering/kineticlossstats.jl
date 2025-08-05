@@ -47,8 +47,8 @@ all_params = Dict{String, Any}(
     "discretisation" => [:GapGaussLegendre],
     "impuritymodel" => :Hokseon,
     "method" => [:AdiabaticIESH],
-    "incident_energy" => [0.1, 0.25, 0.5, 0.6, 0.99, 1.92, 3.0, 4.0, 5.0 ,6.17, 7.0], #collect(0.2:0.025:0.8), #collect(0.25:0.25:5)
-    "couplings_rescale" => [1.95],
+    "incident_energy" => [0.99,1.92,6.17], #collect(0.2:0.025:0.8), #collect(0.25:0.25:5)
+    "couplings_rescale" => [2.5],
     "centre" => [0],
     "gap" => [0.49],
     "decoherence"=>[:EDC],
@@ -61,48 +61,60 @@ if typeof(params_list) != Vector{Dict{String, Any}}
     params_list = [params_list]
 end
 
-params = params_list[1]
-params_name = savename(params)
 
-csvpath = datadir("sims", "Individual-Large", params_name, "scattered_kinetic_loss")
+for params in params_list
 
-if !isdir(csvpath)
-    error("The directory 'scattered_kinetic_loss' does not exist at path: $kinetic_loss_folder_path")
+    params_name = savename(params)
+
+    csvpath = datadir("sims", "Individual-Large", params_name, "scattered_kinetic_loss")
+
+    if !isdir(csvpath)
+        error("The directory 'scattered_kinetic_loss' does not exist at path: $kinetic_loss_folder_path")
+    end
+
+    loss_folder_existed_path = glob("*.csv", csvpath)
+    n_csv = length(loss_folder_existed_path)
+
+    # Initialize an empty array to store the data from all CSV files
+    all_data = []
+
+    # Iterate over each CSV file path
+    for csv_file in loss_folder_existed_path
+        # Read the CSV file into a DataFrame
+        df = CSV.read(csv_file, DataFrame)
+        # Append the DataFrame to the array
+        push!(all_data, df)
+    end
+
+    # Combine all DataFrames into one (if needed)
+    combined_data = vcat(all_data...)
+    energy_loss = combined_data.OutputKineticLossEV
+
+    if true # filter out those zero energy loss
+        energy_loss = filter(x -> x > 0.1, energy_loss)
+    end
+
+    n_inelastic = length(energy_loss)
+
+    mean_data, margin_error = data_confident_interval(energy_loss)
+
+
+    # Create a DataFrame to store the results
+    results_df = DataFrame(
+        MeanEnergyLossEV = mean_data,
+        MarginError = margin_error,
+        NCSV = n_csv,
+        NInelastic = n_inelastic,
+    )
+    # Save the DataFrame to a CSV file
+    stats_path = joinpath(csvpath, "stats")
+    isdir(stats_path) || mkpath(stats_path)
+
+    output_path = joinpath(csvpath, "stats", "mean_margin_error.csv")
+    CSV.write(output_path, results_df)
+    println("Statistics saved to $output_path")
+
 end
-
-loss_folder_existed_path = glob("*.csv", csvpath)
-
-# Initialize an empty array to store the data from all CSV files
-all_data = []
-
-# Iterate over each CSV file path
-for csv_file in loss_folder_existed_path
-    # Read the CSV file into a DataFrame
-    df = CSV.read(csv_file, DataFrame)
-    # Append the DataFrame to the array
-    push!(all_data, df)
-end
-
-# Combine all DataFrames into one (if needed)
-combined_data = vcat(all_data...)
-energy_loss = combined_data.OutputKineticLossEV
-
-if true # filter out those zero energy loss
-    energy_loss = filter(x -> x > 0.1, energy_loss)
-end
-
-mean_data, margin_error = data_confident_interval(energy_loss)
-
-
-# Create a DataFrame to store the results
-results_df = DataFrame(
-    MeanEnergyLossEV = mean_data,
-    MarginError = margin_error
-)
-# Save the DataFrame to a CSV file
-output_path = joinpath(csvpath, "stats", "mean_margin_error.csv")
-CSV.write(output_path, results_df)
-println("Statistics saved to $output_path")
 
 # End timing the process
 end_time = now()

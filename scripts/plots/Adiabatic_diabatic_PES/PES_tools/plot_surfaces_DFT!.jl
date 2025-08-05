@@ -129,7 +129,7 @@ function plot_surfaces_DFT!(ax, parameter_dict::Dict{Symbol,Float64}, x_ang::Abs
     excited_PES_energy_5A = []
     for (i, e) in Iterators.reverse(enumerate(energies))
         y = e .+ U_0s # NA Hamiltonian = adiabatic eigenvalues + U_0
-        lines!(ax, x_ang, y, color=colors[i], linewidth= i==1 ? 4 : 1)
+        lines!(ax, x_ang, y, color=colors[i], linewidth= i==1 ? 3 : 1)
 
         if y[end] < 1.92 && y[end] > 0.4
             push!(excited_PES_energy_5A, y[end])
@@ -151,11 +151,11 @@ function plot_surfaces_DFT!(ax, parameter_dict::Dict{Symbol,Float64}, x_ang::Abs
     
     y_DFT = DFT[:,2] .+ aglinment # align the DFT ground state to the adiabatic ground states
 
-    lines!(ax, DFT[:,1], y_DFT, label="DFT PES",linestyle=:dash, color=:blue, linewidth=3)
+    lines!(ax, DFT[:,1], y_DFT, label="DFT PES",linestyle=:dash, color=:blue, linewidth=2)
     ## --------------------- ##
 
     ## bandgap##
-    hlines!(ax, [ground_end + bandgap], color=:black, linestyle=:dash, label="Band Gap", linewidth=3)
-    hlines!(ax, [ground_end], color=:black, linestyle=:dash,linewidth=3)
+    hlines!(ax, [ground_end + bandgap], color=:black, linestyle=:dash, label="Band Gap", linewidth=2)
+    hlines!(ax, [ground_end], color=:black, linestyle=:dash,linewidth=2)
 
 end

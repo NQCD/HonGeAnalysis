@@ -18,6 +18,9 @@ for file in readdir(srcdir(), join=true) # join=true returns the full path
     end
 end
 
+
+saving = true
+
 method = "IESH"
 
 params_path = "parameters_" * method * ".jl"
@@ -73,11 +76,11 @@ for (i, nstates) in enumerate(nstates_list)
     end
     @info "nstates = $nstates: bandwidth = $a_nstates_bandwidth and the n_inelastic = $a_nstates_n_inelastic." 
 
-
+    ## Need to remove the && false part to plot the 150 nstate 50 bandwidth data from Individual-Large
     if nstates == 150
         mean_92_eV_300k_path = datadir("sims", 
         "Individual-Large", 
-        "centre=0_couplings_rescale=1.95_decoherence=EDC_discretisation=GapGaussLegendre_dt=0.05_gap=0.49_impuritymodel=Hokseon_incident_energy=1.92_is_Wigner=false_mass=1.01_method=AdiabaticIESH_nstates=150_temperature=300.0_tmax=1001_trajectories=500_width=50",
+        "centre=0_couplings_rescale=2.5_decoherence=EDC_discretisation=GapGaussLegendre_dt=0.05_gap=0.49_impuritymodel=Hokseon_incident_energy=1.92_is_Wigner=false_mass=1.01_method=AdiabaticIESH_nstates=150_temperature=300.0_tmax=1001_trajectories=500_width=50",
         "scattered_kinetic_loss",
         "stats",
         "mean_margin_error.csv")
@@ -92,6 +95,17 @@ for (i, nstates) in enumerate(nstates_list)
 
     ## Plot the markers
     scatter!(ax, a_nstates_bandwidth, a_nstates_loss, color=colormap[i+2], label=latexstring("\$M = $(nstates) \$"), markersize=20, marker=markers[i])
+
+    save_txt_path = projectdir("figure_data", "fig_S3", "IESH_energyloss_nstates_$(nstates).txt")
+    headers = "Bandwidth(eV), MeanEnergyLoss(eV), CI_Error(eV)"
+    data = hcat(a_nstates_bandwidth,a_nstates_loss,a_nstates_margin_errors)
+    if saving == true
+        save_values2txt(save_txt_path, data; headers = headers)
+        @info "Saved energy loss data to $save_txt_path"
+    else
+        @info "Not saving energy loss data, set saving = true to save"
+    end
+        
     
     ## Plot the confidence intervals
     if i == length(nstates_list)

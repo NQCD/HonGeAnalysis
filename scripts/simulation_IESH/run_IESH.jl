@@ -109,7 +109,7 @@ end
 
     ###Return
     return run_dynamics(sim, (0.0, tmax), dist;
-        output=(OutputKineticEnergy, OutputPosition, OutputOutcome, OutputFinalDiscreteState),#, OutputDiscreteState, OutputSurfaceHops),
+        output=(OutputKineticEnergy, OutputPosition, OutputOutcome, OutputDiscreteState, OutputAdiabaticPopulation),#, OutputDiscreteState, OutputSurfaceHops),
         dt = dt * u"fs",
         callback = terminate,
         trajectories,

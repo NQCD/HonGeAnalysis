@@ -35,8 +35,8 @@ all_params = Dict{String, Any}(
     "discretisation" => [:GapGaussLegendre],#GapTrapezoidalRule
     "impuritymodel" => :Hokseon,
     "method" => [:EhrenfestNA],
-    "incident_energy" => [0.7,0.4, 0.3],#collect(0.2:0.025:0.225),#,collect(0.625:0.025:0.675),
-    "couplings_rescale" => [1.95],
+    "incident_energy" => [0.7, 0.4, 0.3],#collect(0.2:0.025:0.225),#,collect(0.625:0.025:0.675),
+    "couplings_rescale" => [2.5],
     "centre" => [0],
     "gap" => [0.49],
     "is_Wigner_initial" => false,
@@ -111,6 +111,8 @@ function plot_adiabatic_state_population_position_time_many_incident(params_list
             xminorticks = IntervalsBetween(2),
             yminorticks = IntervalsBetween(2),  # Example: 1 minor tick between major Y ticks
 
+            xlabelsize = 25,
+
         ) for i in 1:n_plots
     ]
 
@@ -138,7 +140,7 @@ function plot_adiabatic_state_population_position_time_many_incident(params_list
 
             # --- Limits ---
             # Slightly pad limits to ensure edge ticks are fully visible
-            limits = (nothing, nothing, nothing, nothing), # Y limits set automatically or define below
+            limits = (nothing, nothing, nothing, 5.5), # Y limits set automatically or define below
 
             # --- Major Ticks (Labeled) ---
             xticks = major_ticks,
@@ -193,12 +195,13 @@ function plot_adiabatic_state_population_position_time_many_incident(params_list
     linkxaxes!(axes_e...)
 
     # Label on the left side of the figure
-    Label(fig[1:n_plots, 0], "Adiabatic State Population", rotation = π / 2, tellwidth = true, tellheight = true)
-    Label(fig[1:n_plots, 2], "x / Å", rotation = -π / 2, tellwidth = true, tellheight = true, color = :red)
+    Label(fig[1:n_plots, 0], "Adiabatic State Population", rotation = π / 2, tellwidth = true, tellheight = true, fontsize = 25)
+    Label(fig[1:n_plots, 2], "x / Å", rotation = -π / 2, tellwidth = true, tellheight = true, color = :red, fontsize = 25, padding = (-10, 0, 0, 0)) # Increase right padding to push it further left
 
     return fig
 end
 
+saving = true  # save the figure value into the txt file in figure_data/fig_4 folder or not
 #save(plotsdir("Ehrenfest","Many_incident_energies_adiabaticPES_proportion_paper.pdf"), plot_adiabatic_state_population_position_time_many_incident(params_list))
 plot_adiabatic_state_population_position_time_many_incident(params_list)
 
