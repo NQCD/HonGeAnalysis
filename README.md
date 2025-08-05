@@ -2,10 +2,10 @@
 
 This code base is using the [Julia Language](https://julialang.org/).
 
-The repository is developed by [Hokseon(Xuexun)](https://louhokseson.github.io) and aims to reproduce the simulations and plots showed in the manuscript:
-> [A Haldane-Anderson Model Hamiltonian for Hyperthermal Hydrogen Scattering from a Semiconductor Surface](https://doi.org/10.1016/j.cpc.2023.108885) by Xuexun Lu, Nils Hertl and Reinhard Maurer.
+The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhokseson.github.io) and aims to reproduce the simulations and plots showed in the manuscript:
+> [A Haldane-Anderson Model Hamiltonian for Hyperthermal Hydrogen Scattering from a Semiconductor Surface](https://about:blank) by Xuexun Lu, Nils Hertl, Sara Oregioni, Rocco Martinazzo and Reinhard Maurer.
 
-This project is part of Xuexun's PhD proejct funded by the
+This project is part of Xuexun's PhD funded by the EPSRC Doctoral Training Partnership and Nils' MSCA postdoctoral fellowship at the University of Warwick.
 
 
 ## Step-by-step instructions from the author
