@@ -12,7 +12,7 @@ using Colors
 colorscheme = ColorScheme(parse.(Colorant, ["#045275", "#089099", "#7CCBA2", "#FCDE9C", "#F0746E", "#DC3977", "#7C1D6F"]));
 colormap = HokseonPlots.NICECOLORS;
 
-
+saving = true
 
 all_params = Dict{String, Any}(
     "trajectories" => [500],
@@ -25,8 +25,8 @@ all_params = Dict{String, Any}(
     "discretisation" => [:GapGaussLegendre],
     "impuritymodel" => :Hokseon,
     "method" => [:AdiabaticIESH],
-    "incident_energy" => [0.1, 0.25,0.37, 0.5, 0.6, 0.99, 1.92, 3.0, 4.0, 5.0 ,6.17, 7.0],#[0.37,0.99, 1.92, 6.17], 
-    "couplings_rescale" => [1.95],
+    "incident_energy" => [0.1,0.25,0.37,0.5, 0.6, 0.99, 1.92, 3.0, 4.0,5.0, 6.17, 7.0],#[0.37,0.99, 1.92, 6.17], [0.1, 0.25,0.37, 0.5, 0.6, 0.99, 1.92, 3.0, 4.0, 5.0 ,6.17, 7.0]
+    "couplings_rescale" => [2.5],
     "centre" => [0],
     "gap" => [0.49],
     "decoherence"=>[:EDC],
@@ -149,7 +149,20 @@ experimental_indices = [findfirst(x -> x == val, experimental_incident_energy) f
 star_indices = findall(x -> x in experimental_incident_energy, incident_energy_vec)
 
 fig = Figure(size=(HokseonPlots.RESOLUTION[1]*2, 3*HokseonPlots.RESOLUTION[2]), figure_padding=(3, 3, 3, 3), fonts=(;regular=projectdir("fonts", "MinionPro-Capt.otf")), fontsize = 20)
-ax = MyAxis(fig[1,1], xlabel="Incident Energy / eV", ylabel= "Sticking Coefficient",xgridvisible=false, ygridvisible=false, yticksmirrored=false, yticklabelcolor = :black, yaxisposition = :left)
+ax = MyAxis(fig[1,1], xlabel="Incident Energy / eV", ylabel= "Sticking Coefficient",xgridvisible=false, ygridvisible=false, yticksmirrored=false, yticklabelcolor = :black, yaxisposition = :left, xticks=0:7)
+
+
+
+if saving
+    include(srcdir("save_values2txt.jl"))
+    save_txt_path = projectdir("figure_data", "fig_7", "IESH_sticking_probability.txt")
+    headers = "IncidentEnergy(eV),StickingCoefficient,CI_Error"
+    data = hcat(incident_energy_vec, sticking_probability_vec, ci_error_vec)
+    save_values2txt(save_txt_path, data; headers = headers)
+    @info "Saved sticking probability data to $save_txt_path"
+else
+    @info "Not saving sticking probability data, set saving = true to save"
+end
 
 
 # 1. Plot ALL points with the main line and default marker
@@ -164,24 +177,28 @@ scatterlines!(
     linewidth = 3
 )
 
+
 # 2. On top of the previous plot, add ONLY the specific points with a star marker
 #    These points will inherit the color from the main line if not specified,
 #    but it's good practice to set it explicitly for clarity.
-scatter!(
+p2 = scatter!(
     ax,
     incident_energy_vec[star_indices],
     sticking_probability_vec[star_indices],
-    markersize = 27, # Slightly larger for emphasis
-    color = colorscheme[2], # Same color as the main line
-    marker = :star5,
+    markersize = 20, # Slightly larger for emphasis
+    color = colorscheme[4], # Same color as the main line
+    #marker = :star5,
     strokewidth = 2,
     label = "Experimental Incidence" # Separate legend label for stars
 )
-#scatter!(ax, experimental_incident_energy, sticking_probability_vec[experimental_indices], markersize=20, color=colorscheme[3], label="Experimental   with IESH",strokewidth = 2)
 vlines!(ax, [0.49], color=:black, linestyle=:dash, linewidth=2, label="Band Gap 0.49 eV")
 errorbars!(ax, incident_energy_vec, sticking_probability_vec, ci_error_vec, color=:red, whiskerwidth = 10, label = "95% CI", linewidth = 2)
 
-Legend(fig[1,1], ax,["IESH Simulation"], tellwidth=false, tellheight=false, valign=:top, halign=:right, margin=(5, 5, 5, 5), orientation=:vertical, titlefont=projectdir("fonts", "MinionPro-Capt.otf"))
+Legend(fig[1,1], ax, tellwidth=false, tellheight=false, valign=:top, halign=:right, margin=(5, 5, 5, 5), orientation=:vertical, titlefont=projectdir("fonts", "MinionPro-Capt.otf"))
+
+
+
+
 
 #save(plotsdir("Sticking","IESH_incident_energies_sticking.pdf"), fig)
 

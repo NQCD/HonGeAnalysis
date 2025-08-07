@@ -1,4 +1,5 @@
 using NQCModels
+include("HGe_model/HGemodel.jl")
 function unit_atomicToclassical(model::NQCModels.Morse; dict::Dict{Symbol, Any} = Dict{Symbol, Any}())
     """
     Morse potential: U_0(x) [:Dₑ, :x₀, :a]
@@ -26,7 +27,7 @@ function unit_atomicToclassical(model::NQCModels.Morse; dict::Dict{Symbol, Any} 
 
 end
 
-function unit_atomicToclassical(model::NQCModels.Logistic; dict::Dict{Symbol, Any} = Dict{Symbol, Any}(), add_prime::Bool = false)
+function unit_atomicToclassical(model::Logistic; dict::Dict{Symbol, Any} = Dict{Symbol, Any}(), add_prime::Bool = false)
     """
     Logistic potential: h(x) [:L, :k, :x₀, :c, :a]
 
@@ -65,7 +66,7 @@ function unit_atomicToclassical(model::NQCModels.Logistic; dict::Dict{Symbol, An
 end
 
 
-function unit_atomicToclassical(model::NQCModels.Hokseon)
+function unit_atomicToclassical(model::Hokseon)
     """
     Hokseon model contains three parts:
 

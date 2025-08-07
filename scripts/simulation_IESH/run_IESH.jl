@@ -22,6 +22,7 @@ include("../../src/job_threads.jl")
 @everywhere using Glob
 @everywhere using NQCDynamics
 @everywhere using NQCModels
+@everywhere include(srcdir("HGe_model", "HGemodel.jl"))
 
 ### Termination conditions ###
 @everywhere function termination_condition(u, t, integrator)::Bool

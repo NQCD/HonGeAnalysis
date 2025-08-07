@@ -81,6 +81,6 @@ function plot_energy_loss_analysis(methods)
     return fig
 end
 
-saving = true  # save the figure value into the txt file in figure_data/fig_3 folder or not
-save(plotsdir("IESHvsEhrenfest", "Energy_loss_analysis_paper.pdf"),plot_energy_loss_analysis(methods))
+saving = false  # save the figure value into the txt file in figure_data/fig_3 folder or not
+#save(plotsdir("IESHvsEhrenfest", "Energy_loss_analysis_paper.pdf"),plot_energy_loss_analysis(methods))
 plot_energy_loss_analysis(methods)

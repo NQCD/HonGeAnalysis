@@ -1,15 +1,17 @@
 # HonGeAnalysis
 
-This code base is using the [Julia Language](https://julialang.org/).
-
 The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhokseson.github.io) and aims to reproduce the simulations and plots showed in the manuscript:
 > [A Haldane-Anderson Model Hamiltonian for Hyperthermal Hydrogen Scattering from a Semiconductor Surface](https://about:blank) by Xuexun Lu, Nils Hertl, Sara Oregioni, Rocco Martinazzo and Reinhard Maurer.
 
-This project is part of Xuexun's PhD funded by the EPSRC Doctoral Training Partnership and Nils' MSCA postdoctoral fellowship at the University of Warwick.
+This project is part of Xuexun's PhD funded by the EPSRC Doctoral Training Partnership and Nils' MSCA postdoctoral fellowship both at the University of Warwick.
 
 
 ## Step-by-step instructions from the author
-#### Activate the Julia environment
+
+### Activate the Julia environment
+<details>
+<summary><strong>Steps</strong></summary>
+
 After cloning this repository to your machine, you need to the followings
 1. Turn on the Julia REPL where you terminal need to be at the root of this repository
    ```julia
@@ -18,6 +20,10 @@ After cloning this repository to your machine, you need to the followings
    Add `HokseonRegistry` to the julia environment so that you could access some personal packages Hokseon has developed for filing and plotting purposes.
    ```julia
    (HonGeAnalysis) pkg> registry add https://github.com/Louhokseson/HokseonRegistry
+   ```
+   Also, the NQCDRegistry is needed to access the NQCD family packages.
+   ```julia
+   (HonGeAnalysis) pkg> registry add https://github.com/NQCD/NQCRegistry
    ```
 2. If you managed to activate the project environment, you should see the prompt
    ```julia
@@ -31,6 +37,16 @@ After cloning this repository to your machine, you need to the followings
    ```julia
    (HonGeAnalysis) pkg> instantiate
    ```
+5. Last step is to double check you have the correct version of the `NQCDynamics.jl` (v0.13.4) and its companion package, `NQCModels.jl` (v0.8.19) in the julia enviroment.
+   ```julia
+   (HonGeAnalysis) pkg> status NQCDynamics
+   ```
+   If you see the version is not correct, you can use the following command to update the package.
+   ```julia
+   (HonGeAnalysis) pkg> add NQCDynamics@0.13.4
+   ```
+   Exact same procedure applies to `NQCModels.jl` package.
+</details>
 
 #### Data availibility
 While you are configurating your Julia environment with [HonGeAnalysis](https://github.com/NQCD/HonGeAnalysis), you are recommended to download the conjugate data of this repository in the meantime. Please unzip the downloaded compressed file under directory `HonGeAnalysis/`. It contains the following data:

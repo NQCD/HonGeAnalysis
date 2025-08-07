@@ -27,7 +27,7 @@ end
 all_params = Dict{String, Any}(
     "trajectories" => [1],
     "nstates" => [150],
-    "dt" => [0.01],
+    "dt" => [0.05],
     "width" => [50],
     "mass" => [1.00784], # Hydrogen atomic mass
     "temperature" => [300.0],

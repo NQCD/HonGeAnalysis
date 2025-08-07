@@ -18,6 +18,7 @@ include("../../src/dict_to_data_savename.jl")
 @everywhere using Glob
 @everywhere using NQCDynamics
 @everywhere using NQCModels
+@everywhere include(srcdir("HGe_model", "HGemodel.jl"))
 
 ## load the conjugate parameters
 filename = basename(@__FILE__)
