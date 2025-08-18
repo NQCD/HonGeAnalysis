@@ -4,7 +4,7 @@
 
 
 The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhokseson.github.io) and aims to reproduce the simulations and plots showed in the manuscript:
-> [A Haldane-Anderson Model Hamiltonian for Hyperthermal Hydrogen Scattering from a Semiconductor Surface](https://about:blank) by Xuexun Lu, Nils Hertl, Sara Oregioni, Rocco Martinazzo and Reinhard Maurer.
+> [A Haldane-Anderson Model Hamiltonian for Hyperthermal Hydrogen Scattering from a Semiconductor Surface](https://about:blank) by Xuexun Lu, Nils Hertl, Sara Oregioni, Rocco Martinazzo and Reinhard J. Maurer.
 
 This project is part of Xuexun's PhD funded by the EPSRC Doctoral Training Partnership and Nils' MSCA postdoctoral fellowship both at the University of Warwick.
 
