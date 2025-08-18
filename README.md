@@ -1,9 +1,47 @@
 # HonGeAnalysis
 
+[![Build Status](https://github.com/Louhokseson/HonGeAnalysis/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/Louhokseson/HonGeAnalysis/actions/workflows/CI.yml?query=branch%3Amain)
+
+
 The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhokseson.github.io) and aims to reproduce the simulations and plots showed in the manuscript:
 > [A Haldane-Anderson Model Hamiltonian for Hyperthermal Hydrogen Scattering from a Semiconductor Surface](https://about:blank) by Xuexun Lu, Nils Hertl, Sara Oregioni, Rocco Martinazzo and Reinhard Maurer.
 
 This project is part of Xuexun's PhD funded by the EPSRC Doctoral Training Partnership and Nils' MSCA postdoctoral fellowship both at the University of Warwick.
+
+#### ONLY FOR Hokseon
+
+<details>
+<summary><strong>Hokseon needs to read this</strong></summary>
+
+Hope the future me would thank the Hokseon who is wrapping up this repository. This repo should be ready in some machines that Hokseon can use by the time he comes back to it. i.e. Archer2 and Taskfarm.
+- If you need to configure a new machine, please follow the step you wrote below. Because with the given UUID of NQCDynamics and NQCModels, julia package git installer would automatically download v0.15.0. Make sure that you do
+```julia
+(HonGeAnalysis) pkg> add NQCDynamics@0.13.4
+```
+in your configure script for that machine.Same applies to `NQCModels.jl` which has to be either v0.8.20 or v0.8.19.
+- Make sure `data` folder has folder `sims`. Within `sims` should have `Ehrenfest`, `IESH` and `Individual-Large`. The first two are used for storing the raw `.h5` output from NQCD simulation. Each of the `.h5` should be named after the simulation parameters ([parameters_IESH.jl](/scripts/simulation_IESH/parameters_IESH.jl) for reference). The given run scripts (Ehrenfest/IESH) would skip taht simulation if the conjugate output `.h5` exist in folder `Ehrenfest` or `IESH`.
+- When you need to do repeating simulations (mostly IESH for energy loss/ sticking probability convergence), make sure you turn the `is_dividual_large_saving = true` in the parameters_IESH.jl for simualtions. For example, 500 trajectories for a `.h5` for 1000 times.
+- When you have generated massive amount of .h5 file under folder `Individual-Large/your_simulation_parameter...`, you need to process/extract the useful properties by 
+1. Run [traj2kineticloss.jl](/scripts/data_engineering/traj2kineticloss.jl) and [traj2nstick.jl](/scripts/data_engineering/traj2nstick.jl) (order of executing does not matter since they are independent). These two generate folder `scattering_counting` and `scattered_kinetic_loss` containing `.csv` with the desired properities (including confidence errors) from the NQCD simulated `.h5` data.  The `.csv` is easy for storage and rsyncing between machines.
+- Rsyncing the whole folder from HPCs to storage machine to process the [traj2kineticloss.jl](/scripts/data_engineering/traj2kineticloss.jl) and [traj2nstick.jl](/scripts/data_engineering/traj2nstick.jl). `rsync -avn` is a dry run. testing whether the stuff can be send to desitnation. The actually syncing need `rsync -av` 
+
+**Whole folder rsyncing**
+```bash
+rsync -avn your-path-to-the-folder destination
+```
+**Files inside folder rsyncing**
+```bash
+rsync -avn your-path-to-the-folder/ destination
+```
+
+- Rsyncing the processed `.csv` to a local laptop:
+**Exclude .h5 files**
+```bash
+rsync -avn --exclude='*.h5' source destination
+```
+</details>
+
+
 
 
 ## Step-by-step instructions from the author
@@ -47,6 +85,8 @@ After cloning this repository to your machine, you need to the followings
    ```
    Exact same procedure applies to `NQCModels.jl` package.
 </details>
+
+For those who are confident with Julia and skip the folded instructions, you are highly recommended to check your installed version of `NQCDynamics.jl` and `NQCModels.jl` packages are v0.13.4 and v0.8.19 respectively. If you are not sure, please follow the folded content in **Steps**.
 
 #### Data availibility
 While you are configurating your Julia environment with [HonGeAnalysis](https://github.com/NQCD/HonGeAnalysis), you are recommended to download the conjugate data of this repository in the meantime. Please unzip the downloaded compressed file under directory `HonGeAnalysis/`. It contains the following data:

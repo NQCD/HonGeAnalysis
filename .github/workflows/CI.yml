@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1'
+          - '1.11.5'
         os:
           - ubuntu-latest
         arch:
@@ -29,6 +29,13 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
+
+      # 👇 Add custom registries here
+      - name: Add custom registries
+        run: |
+          julia -e 'using Pkg; Pkg.Registry.add(Pkg.RegistrySpec(url="https://github.com/Louhokseson/HokseonRegistry"))'
+          julia -e 'using Pkg; Pkg.Registry.add(Pkg.RegistrySpec(url="https://github.com/NQCD/NQCRegistry"))'
+
       - uses: julia-actions/cache@v1
       - uses: julia-actions/julia-buildpkg@v1
 
