@@ -1,6 +1,7 @@
 # HonGeAnalysis
 
-[![Build Status](https://github.com/Louhokseson/HonGeAnalysis/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/Louhokseson/HonGeAnalysis/actions/workflows/CI.yml?query=branch%3Amain)
+[![Build Status](https://github.com/NQCD/HonGeAnalysis/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/NQCD/HonGeAnalysis/actions/workflows/CI.yml)
+
 
 
 The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhokseson.github.io) and aims to reproduce the simulations and plots showed in the manuscript:
