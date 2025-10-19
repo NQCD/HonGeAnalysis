@@ -24,7 +24,7 @@ function plot_fig_3()
     methods = ["Ehrenfest","IESH"]
 
     fig = Figure(size=(HokseonPlots.RESOLUTION[1]*2, 3*HokseonPlots.RESOLUTION[2]), figure_padding=(1, 2, 1, 1), fonts=(;regular=projectdir("fonts", "MinionPro-Capt.otf")), fontsize = 17)
-    ax = MyAxis(fig[1,1], xlabel="Incidence Energy / eV", ylabel= "Energy Loss / eV",limits=(nothing, nothing, nothing, 0.1),xgridvisible=false, ygridvisible=false)
+    ax = MyAxis(fig[1,1], xlabel="Incidence Energy / eV", ylabel= "Energy Loss / eV",limits=(nothing, nothing, nothing, 0.105),xgridvisible=false, ygridvisible=false)
 
     for (i,method) in enumerate(methods)
 
@@ -69,5 +69,6 @@ function plot_fig_3()
     return fig
 end
 
+#save(plotsdir("IESHvsEhrenfest", "Energy_loss_analysis_paper.pdf"), plot_fig_3())
 
 plot_fig_3()
