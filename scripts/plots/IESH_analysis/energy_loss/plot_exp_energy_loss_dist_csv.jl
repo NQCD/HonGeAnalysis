@@ -120,6 +120,8 @@ function plot_exp_energy_loss_dist_csv(params_list; saving = false)
     # Define the tick values and sizes
     major_ticks = -1:1:6
 
+    ymax = [3.01, 1.9, 1.51]
+
     axes = [
         Axis(
             fig[i, 1], # Place plots vertically in the first column
@@ -139,7 +141,7 @@ function plot_exp_energy_loss_dist_csv(params_list; saving = false)
 
             # --- Limits ---
             # Slightly pad limits to ensure edge ticks are fully visible
-            limits = (-1, 6.2, nothing, nothing), # Y limits set automatically or define below
+            limits = (-1, 6.2, -0.25, ymax[i]), # Y limits set automatically or define below
 
             # --- Major Ticks (Labeled) ---
             xticks = major_ticks,
@@ -195,6 +197,7 @@ end
 #save(plotsdir("Exp_IESH_incident_energies_dist.pdf"), plot_exp_energy_loss_dist_csv(params_list))
 
 saving = true
+save(plotsdir("fig_6", "Exp_IESH_incident_energies_dist.pdf"),plot_exp_energy_loss_dist_csv(params_list; saving))
 plot_exp_energy_loss_dist_csv(params_list; saving)
 
 

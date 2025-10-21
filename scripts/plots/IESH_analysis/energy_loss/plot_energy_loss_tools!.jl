@@ -115,7 +115,7 @@ function plot_exp_param_dist_csv!(fig, ax,params; is_exp_plot=true, path = "sims
 
     @info "Total trajectories of incident energy $(params["incident_energy"]) eV: $(length(energy_loss))"
 
-    if true # filter out those zero energy loss
+    if false # filter out those zero energy loss
         energy_loss = filter(x -> x > 0.1, energy_loss)
     end
 
@@ -136,13 +136,31 @@ function plot_exp_param_dist_csv!(fig, ax,params; is_exp_plot=true, path = "sims
 
     k = kde(energy_loss, Normal(0, 0.02))
 
-    lines!(ax, k.x, k.density .* 1 , color=colormap[color_number], linewidth=3, label="IESH")
+    if true
+      k_left = kde(energy_loss[energy_loss .< 0.2], Normal(0, 0.003))
+      k_right = kde(energy_loss[energy_loss .> 0.2], Normal(0, 0.02))
+      xs_left = range(minimum(energy_loss[energy_loss .< 0.2])-.1, maximum(energy_loss[energy_loss .< 0.2])+.1, length=500)
+      xs_right = range(minimum(energy_loss[energy_loss .> 0.2])-.1, maximum(energy_loss[energy_loss .> 0.2])+.1, length=500)
+      #ys = pdf.(Ref(k_left), xs) .+ pdf.(Ref(k_right), xs)
+      ys_left = pdf.(Ref(k_left), xs_left)
+      ys_right = pdf.(Ref(k_right), xs_right)
+      lines!(ax, xs_left, ys_left .* 1, color=colormap[color_number+2], linewidth=3, label="IESH Elastic")
+      lines!(ax, xs_right, ys_right .* 1, color=colormap[color_number], linewidth=3, label="IESH Inelastic")
+    end
 
     interp = LinearInterpolation(k.x, k.density .* 1)
 
     IESH_integration = quadgk(interp, minimum(k.x), maximum(k.x))[1]
 
+    IESH_inelastic_intergation = quadgk(interp, 0.48, maximum(k.x))[1]
+
+    scaling = 1 / IESH_inelastic_intergation
+
+    #lines!(ax, k.x, k.density .* scaling , color=colormap[color_number], linewidth=3, label="IESH")
+
     @info "IESH integration: $IESH_integration"
+
+    @info "IESH inelastic peak integration: $(IESH_inelastic_intergation .* scaling)"
     @info "Inelastic peak experiments integration: $inelastic_intergation"
 
 
