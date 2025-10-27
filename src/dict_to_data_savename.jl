@@ -34,9 +34,98 @@ It searches for the input `method` (converted to a string) within a predefined l
 
 
 
-function methods_to_foldernames(method::Symbol; objective_methodfoldernames::Vector{String} = ["IESH", "Ehrenfest", "MDEF", "FSSH"])
+function methods_to_foldernames(method::Symbol; objective_methodfoldernames::Vector{String} = ["IESH", "Ehrenfest", "MDEF"])
     index = findfirst(label -> occursin(label, string(method)), objective_methodfoldernames)
     return index !== nothing ? objective_methodfoldernames[index] : error("Your input method $method is not included in your objective method foldernames $objective_methodfoldernames")
+end
+
+
+"""
+    one_more_folder(params::Dict{String, Any}) -> String
+
+Generate a safe folder path name based on the given simulation parameters.
+
+This function uses `savename(params)` to create a folder name that represents
+the current parameter set. If the resulting folder name exceeds 255 characters
+(the typical maximum filename length on most filesystems), the function
+attempts to shorten it by removing the `"sigma"` key when the parameter
+`"is_Wigner"` is set to `true`.
+
+### Behavior
+1. Generate a folder name using `savename(params)`.
+2. If the name length ≤ 255, return it directly.
+3. If it exceeds 255:
+   - If `params["is_Wigner"] == true`, make a copy of the dictionary,
+     delete the `"sigma"` key, and regenerate the folder name from that reduced
+     parameter set.
+   - If the shortened name is still > 255 characters, raise an error.
+   - Otherwise, create a two-level folder path:
+     ```
+     <first_layer>/<second_layer>
+     ```
+     where:
+     - `<first_layer>` = folder name without `"sigma"`
+     - `<second_layer>` = `"sigma=<value>"` from the original `params`.
+   - If `"is_Wigner"` is missing or not `true`, fall back to the original folder name.
+
+### Arguments
+- `params::Dict{String, Any}`: 
+  Dictionary containing parameter names and values. Must be compatible with `savename`.
+
+### Returns
+- `String`: A valid folder path string suitable for creating or saving results.
+
+### Errors
+- Raises an error if the folder name remains too long even after deleting `"sigma"`.
+- Logs an error if `"is_Wigner"` key is missing, and returns the original folder name.
+
+### Example
+```julia
+params = Dict(
+    "is_Wigner" => true,
+    "sigma" => 0.05,
+    "L" => 10,
+    "T" => 0.1
+)
+
+folder_path = one_more_folder(params)
+println(folder_path)
+# → "is_Wigner=true_L=10_T=0.1/sigma=0.05"
+```
+"""
+
+
+function params_folder_path(params)
+    folder_name_archive = savename(params)
+    folder_name_archive_len = length(folder_name_archive)
+
+    folder_path = ""  # ensure variable always exists
+
+    if folder_name_archive_len > 255
+        try 
+            if get(params, "is_Wigner", false) == true
+                params_deleted = deepcopy(params)
+                delete!(params_deleted, "sigma")
+                folder_name_first_layer = savename(params_deleted)
+
+                if length(folder_name_first_layer) > 255
+                    error("Even after deleting sigma, the folder name is still too long.")
+                end
+                folder_name_second_layer = "sigma=$(params["sigma"])"
+
+                folder_path = joinpath(folder_name_first_layer, folder_name_second_layer)
+            else
+                folder_path = folder_name_archive
+            end
+        catch e
+            @error "params does not have is_Wigner key, cannot delete sigma key" exception=(e, catch_backtrace())
+            folder_path = folder_name_archive  # fallback value
+        end
+    else
+        folder_path = folder_name_archive
+    end
+
+    return folder_path
 end
 
 
@@ -83,14 +172,14 @@ function dict_to_data_savename(param_dict::Dict{String, Any}; is_dividual_large_
 
     ## Saving path ##
     if is_dividual_large_saving
-        savingpath = "sims/Individual-Large/" * savename(param_dict)
+        savingpath = "sims/Individual-Large/" * params_folder_path(param_dict)
 
         # Check if the folder exists, if not create it
         if isdir(datadir(savingpath)) == false
-            mkdir(datadir(savingpath))
+            mkpath(datadir(savingpath))
         end 
 
-        job_id = ID_SOURCE * "_$(WORKER_JOB_ID)"
+        job_id = ID_SOURCE * "_$(WORKER_JOB_ID)" * (nprocs() > 1 ? "_WORKER_$(myid())" : "")
         largest_index = nprocs() > 1 ? (@fetchfrom 2 find_largest_datafile_index(datadir(savingpath), job_id)) : find_largest_datafile_index(datadir(savingpath), job_id)
         savingname = job_id * "_$(largest_index + 1).h5"
     else

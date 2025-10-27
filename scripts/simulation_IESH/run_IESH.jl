@@ -56,6 +56,7 @@ end
     @info "method = $(method)"
     @info "nstates = $(nstates)"
     @info "width = $(width) eV"
+    @info "couplings_rescale = $(couplings_rescale) a.u."
     ###Atom
     atoms = Atoms(mass*u"u")
     diabaticmodel = eval(impuritymodel)(;diabatic_dict...)
@@ -80,8 +81,7 @@ end
 
     @unpack is_Wigner = params
     if is_Wigner
-        p_ini = sqrt(ke*2m) # ke is the kinetic energy, m is the mass
-        sigma = 5.0/p_ini #in .a.u. so hbar is implicit, 5 is a constant that is chosen to match typical Gaussian nuclear wavepacket conditions
+        @unpack sigma = params
         lambda = 1/(2*m*sigma) #in a.u.
         # Define Gaussian distributions for position and velocity
         position = Normal(position, sigma)

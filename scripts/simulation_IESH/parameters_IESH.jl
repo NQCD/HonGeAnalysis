@@ -1,23 +1,29 @@
 using DrWatson
 ### Parameters ###
+is_Wigner = [true]  # can be a vector of Bool
+
 all_params = Dict{String, Any}(
-    "trajectories" => [1 for i in 1:2],
-    "nstates" => [150],
-    "dt" => [0.05],
-    "width" => [50],
-    "mass" => [1.00784], # Hydrogen atomic mass
-    "temperature" => [300.0],
-    "tmax" => [1001],
-    "discretisation" => [:GapGaussLegendre],
-    "impuritymodel" => :Hokseon,
-    "method" => [:AdiabaticIESH],
-    "incident_energy" => [6.17], #collect(0.2:0.025:0.8), #collect(0.25:0.25:5)
+    "trajectories"      => [500 for i in 1:10^4],
+    "nstates"           => [150],
+    "dt"                => [0.05],
+    "width"             => [50],
+    "mass"              => [1.00784],
+    "temperature"       => [300.0],
+    "tmax"              => [1001],
+    "discretisation"    => [:GapGaussLegendre],
+    "impuritymodel"     => :Hokseon,
+    "method"            => [:AdiabaticIESH],
+    "incident_energy"   => [6.17],
     "couplings_rescale" => [2.5],
-    "centre" => [0],
-    "gap" => [0.49],
-    "decoherence"=>[:EDC],
-    "is_Wigner" => false,
+    "centre"            => [0],
+    "gap"               => [0.49],
+    "decoherence"       => [:EDC],
+    "is_Wigner"         => is_Wigner,
+    # 💡 Elementwise sigma assignment:
+    "sigma"             => [w ? 1.0 : nothing for w in is_Wigner],
 )
+
+
 
 diabatic_dict = Dict{Symbol,Float64}()
 
