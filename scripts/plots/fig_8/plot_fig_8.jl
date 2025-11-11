@@ -23,7 +23,7 @@ for file in readdir(srcdir(), join=true) # join=true returns the full path
 end
 
 ### Parameters ###
-is_Wigner = [true]  # can be a vector of Bool
+sigma = 0.4  # Wigner width
 
 all_params = Dict{String, Any}(
     "trajectories"      => [500],
@@ -36,20 +36,22 @@ all_params = Dict{String, Any}(
     "discretisation"    => [:GapGaussLegendre],
     "impuritymodel"     => :Hokseon,
     "method"            => [:AdiabaticIESH],
-    "incident_energy"   => [0.99,1.92, 6.17],
+    "incident_energy"   => [0.99, 1.92, 6.17],
     "couplings_rescale" => [2.5],
     "centre"            => [0],
     "gap"               => [0.49],
     "decoherence"       => [:EDC],
-    "is_Wigner"         => is_Wigner,
-    # 💡 Elementwise sigma assignment:
-    "sigma"             => [w ? 0.4 : nothing for w in is_Wigner],
+    "is_Wigner"         => [true],
 )
 
 params_list = dict_list(all_params)
 # just make sure that params_list is a list with Dicts
 if typeof(params_list) != Vector{Dict{String, Any}}
     params_list = [params_list]
+end
+
+for param in params_list
+    param["sigma"] = param["is_Wigner"] ? sigma : nothing
 end
 
 
@@ -68,7 +70,12 @@ function plot_fig_8(params_list)
     # Define the tick values and sizes
     major_ticks = -1:1:9
 
-    ymax = [3.01, 1.9, 1.51]
+    @unpack sigma = params_list[1]
+    if sigma == 0.4
+        ymax = [3.01, 1.9, 1.51]
+    else
+        ymax = [5.01, 5.5, 2.51]
+    end
 
     axes = [
         Axis(
@@ -113,8 +120,6 @@ function plot_fig_8(params_list)
         ) for i in 1:n_plots
     ]
 
-    @unpack sigma = params_list[1]
-
     Label_list = ["a", "b", "c", "d", "e", "f"]
 
     
@@ -157,7 +162,7 @@ function plot_fig_8(params_list)
 
         ## HEOM
 
-        HEOM_fig_data_path = projectdir("figure_data", "fig_8", "HEOM_finalKE_$(incident_energy)_eV.txt")
+        HEOM_fig_data_path = projectdir("figure_data", "fig_8", "HEOM_finalKE_$(incident_energy)_eV_sigma_$(sigma).txt")
 
         HEOM_fig_data, header = readdlm(HEOM_fig_data_path, header=true)
 
@@ -168,7 +173,7 @@ function plot_fig_8(params_list)
 
         ## IESH full
 
-        final_IESH_path = projectdir("figure_data", "fig_8", "IESH_finalKE_$(incident_energy)_eV.txt")
+        final_IESH_path = projectdir("figure_data", "fig_8", "IESH_finalKE_$(incident_energy)_eV_sigma_$(sigma).txt")
 
         final_IESH_data, header = readdlm(final_IESH_path, header=true)
 
@@ -185,7 +190,7 @@ function plot_fig_8(params_list)
         lines!(axes[i], x_inelastic, y_inelastic, color=:red, linewidth=3, label = "IESH Final Inelastic Scattering")
 
         Label(fig[i,1], Label_list[i]; tellwidth=false, tellheight=false, valign=:top, halign=:left, padding=(10,10,10,10),fontsize=30,font = :bold)
-        Label(fig[i,1], "Eᵢ = $(param["incident_energy"]) eV"; tellwidth=false, tellheight=false, valign=:top, halign=:right, padding=(10,10,10,10),fontsize=25)
+        Label(fig[i,1], "Eᵢ = $(param["incident_energy"]) eV"; tellwidth=false, tellheight=false, valign=:top, halign=:right, padding=(10,5,10,10),fontsize=25)
 
 
     end
@@ -204,7 +209,7 @@ function plot_fig_8(params_list)
     linkxaxes!(axes...)
 
     # Label on the left side of the figure
-    Label(fig[1:n_plots, 0], "Probability Density / eV⁻¹", rotation = π / 2, tellwidth = true, tellheight = true)
+    Label(fig[1:n_plots, 0], "Likelihood / eV⁻¹", rotation = π / 2, tellwidth = true, tellheight = true)
 
 
     return fig

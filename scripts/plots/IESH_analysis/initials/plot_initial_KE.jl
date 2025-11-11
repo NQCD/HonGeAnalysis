@@ -22,29 +22,36 @@ for file in readdir(srcdir(), join=true) # join=true returns the full path
     end
 end
 
+### Parameters ###
+sigma = 0.4  # Wigner width
+
 all_params = Dict{String, Any}(
-    "trajectories" => [500],
-    "nstates" => [150],
-    "dt" => [0.05],
-    "width" => [50],
-    "mass" => [1.00784], # Hydrogen atomic mass
-    "temperature" => [300.0],
-    "tmax" => [1001],
-    "discretisation" => [:GapGaussLegendre],
-    "impuritymodel" => :Hokseon,
-    "method" => [:AdiabaticIESH],
-    "incident_energy" => [6.17], #collect(0.2:0.025:0.8), #collect(0.25:0.25:5)
+    "trajectories"      => [500],
+    "nstates"           => [150],
+    "dt"                => [0.05],
+    "width"             => [50],
+    "mass"              => [1.00784],
+    "temperature"       => [300.0],
+    "tmax"              => [1001],
+    "discretisation"    => [:GapGaussLegendre],
+    "impuritymodel"     => :Hokseon,
+    "method"            => [:AdiabaticIESH],
+    "incident_energy"   => [6.17],
     "couplings_rescale" => [2.5],
-    "centre" => [0],
-    "gap" => [0.49],
-    "decoherence"=>[:EDC],
-    "is_Wigner" => [true],
+    "centre"            => [0],
+    "gap"               => [0.49],
+    "decoherence"       => [:EDC],
+    "is_Wigner"         => [true],
 )
 
 params_list = dict_list(all_params)
 # just make sure that params_list is a list with Dicts
 if typeof(params_list) != Vector{Dict{String, Any}}
     params_list = [params_list]
+end
+
+for param in params_list
+    param["sigma"] = param["is_Wigner"] ? sigma : nothing
 end
 
 
@@ -56,7 +63,7 @@ ke = austrip(incident_energy * u"eV")
 velocity = - sqrt(2ke / m)
 @unpack is_Wigner = params_list[1]
 if is_Wigner
-    sigma = 0.4 #in .a.u. so hbar is implicit, 5 is a constant that is chosen to match typical Gaussian nuclear wavepacket conditions
+    @unpack sigma = params_list[1]  #in .a.u. so hbar is implicit, 5 is a constant that is chosen to match typical Gaussian nuclear wavepacket conditions
     lambda = 1/(sigma*2*m) #in a.u.
     # Define Gaussian distributions for position and velocity
     x_distribution = Normal(position, sigma)  #position
@@ -96,11 +103,11 @@ function plot_initial_KE_hist_csv(params_list::Vector{Dict{String, Any}}, v_dist
         @unpack incident_energy, gap, temperature, is_Wigner = param
 
         ## go to the directory where the data is stored
-        foldername = savename(param)
-        initials_folder_path = datadir("sims/Individual-Large", foldername, "initial_positions_KE")
+        foldername = params_folder_path(param)
+        initials_folder_path = datadir("sims/Individual-Large", foldername, "start_end_positions_KE")
 
         if !isdir(initials_folder_path)
-            error("The directory 'initial_positions_KE' does not exist at path: $initials_folder_path")
+            error("The directory 'start_end_positions_KE' does not exist at path: $initials_folder_path")
         end
 
         initial_folder_existed_path = glob("*.csv", initials_folder_path)
