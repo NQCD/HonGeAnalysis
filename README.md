@@ -155,18 +155,19 @@ The H atom scattering on Ge(111) surface data is published and available in
 
 <p align="center">
   <a href="https://warwick.ac.uk" target="_blank">
-    <img src="https://warwick.ac.uk/static_war/render/id7/images/wordmark.svg.136055278947" width="200" style="margin-right:20px;" alt="University of Warwick" />
+    <img src="https://warwick.ac.uk/static_war/render/id7/images/wordmark.svg.136055278947" width="200" style="margin:10px;" alt="University of Warwick" />
   </a>
   <a href="https://www.uni-freiburg.de" target="_blank">
-    <img src="https://www.bwhpc.de/img/Logos_Unis/UFR-Wortmarke-Grundform_Blau_CMYK.jpg" width="200" style="margin-right:20px;" alt="University of Freiburg" />
+    <img src="https://www.bwhpc.de/img/Logos_Unis/UFR-Wortmarke-Grundform_Blau_CMYK.jpg" width="200" style="margin:10px;" alt="University of Freiburg" />
   </a>
   <a href="https://www.univie.ac.at" target="_blank">
-    <img src="https://www.univie.ac.at/_assets/12d6b27de3745b4c3b247e6ea4f9bbcc/Images/Logos/univie.svg" width="200" style="margin-right:20px;" alt="University of Vienna" />
+    <img src="https://www.univie.ac.at/_assets/12d6b27de3745b4c3b247e6ea4f9bbcc/Images/Logos/univie.svg" width="200" style="margin:10px;" alt="University of Vienna" />
   </a>
   <a href="https://www.unimi.it" target="_blank">
-    <img src="https://4euplus.eu/cuni_new_web/dist/images/4eu/logo_detail_milano_2x.png?v=1.1.1" width="200" alt="University of Milan" />
+    <img src="https://4euplus.eu/cuni_new_web/dist/images/4eu/logo_detail_milano_2x.png?v=1.1.1" width="200" style="margin:10px;" alt="University of Milan" />
   </a>
 </p>
+
 
 
 </details>
