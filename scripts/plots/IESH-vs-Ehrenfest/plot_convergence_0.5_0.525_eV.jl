@@ -103,4 +103,8 @@ function plot_incidence_convergence_analysis(params_list)
     return fig
 end
 
-plot_incidence_convergence_analysis(params_list)
+fig = plot_incidence_convergence_analysis(params_list)
+
+#save(plotsdir("IESH_0.5_0.525_analysis.png"), fig)
+
+fig
