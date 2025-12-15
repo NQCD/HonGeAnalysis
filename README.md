@@ -5,9 +5,8 @@
 
 
 The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhokseson.github.io) and aims to reproduce the simulations and plots showed in the manuscript:
-> [A Haldane-Anderson Model Hamiltonian for Hyperthermal Hydrogen Scattering from a Semiconductor Surface](https://about:blank) by Xuexun Lu, Nils Hertl, Sara Oregioni, Rocco Martinazzo and Reinhard J. Maurer.
+> [A Haldane-Anderson Model Hamiltonian for Hyperthermal Hydrogen Scattering from a Semiconductor Surface](https://about:blank) by Xuexun Lu, Nils Hertl, Sara Oregioni, Riley J Preston, Samuel Louis Rudge, Michael Thoss, Rocco Martinazzo and Reinhard J. Maurer.
 
-This project is part of Xuexun's PhD funded by the EPSRC Doctoral Training Partnership and Nils' MSCA postdoctoral fellowship both at the University of Warwick.
 
 #### ONLY FOR Hokseon
 
@@ -117,4 +116,26 @@ The ab-initio data is stored in directory `data/ab-initio_cals`. The specs of th
 The H atom scattering on Ge(111) surface data is published and available in 
 > 
 [Krüger, K., Wang, Y., Tödter, S. et al. Hydrogen atom collisions with a semiconductor efficiently promote electrons to the conduction band. Nat. Chem. 15, 326–331 (2023).](https://doi.org/10.1038/s41557-022-01085-x)
+
+
+
+<details>
+<summary><strong>Acknowledgments</strong></summary>
+
+**Fundings**
+
+- EPSRC Doctoral Training Partnership
+- MSCA Postdoctoral Fellowship 
+- Erasmus+ Traineeship Mobility 
+- Alexander von Humboldt Research Fellowship
+- DFG Grant
+- UKRI Future Leaders Fellowship
+- UKRI Frontier Research Grant
+
+**Computing Resources**
+- Scientific Computing Research Technology Platform (SCRTP) in University of Warwick
+- Archer2 UK National Supercomputing Service
+- Sulis HPC Midlands+ Computing Centre 
+- bwHPC (Baden-Württemberg High Performance Computing)
+</details>
 
