@@ -22,8 +22,19 @@ for file in readdir(srcdir(), join=true) # join=true returns the full path
     end
 end
 
+
+
+HEOM_phonon_KE = datadir("sims", "HEOM", "KE_data_phonon_coup_strength.txt")
+
+data_IESH, header_IESH = readdlm(HEOM_phonon_KE, header=true)
+
+lambda²_vec = [0, 0.01, 0.1]
+
+KE_eV = data_IESH[:,1]
+
+
 ### Parameters ###
-sigma = 0.4  # Wigner width
+sigma = 1.0  # Wigner width
 
 all_params = Dict{String, Any}(
     "trajectories"      => [500],
@@ -36,7 +47,7 @@ all_params = Dict{String, Any}(
     "discretisation"    => [:GapGaussLegendre],
     "impuritymodel"     => :Hokseon,
     "method"            => [:AdiabaticIESH],
-    "incident_energy"   => [0.99],
+    "incident_energy"   => [6.17],
     "couplings_rescale" => [2.5],
     "centre"            => [0],
     "gap"               => [0.49],
@@ -51,98 +62,46 @@ if typeof(params_list) != Vector{Dict{String, Any}}
 end
 
 for param in params_list
-    param["sigma"] = param["is_Wigner"] ? sigma : nothing
+    if param["is_Wigner"] == false
+        param["sigma"] = nothing
+    end
 end
 
-
 @unpack mass,incident_energy = params_list[1]
-###final Conditions
 m = ustrip(auconvert(mass*u"u"))
 position = austrip(5u"Å")
 ke = austrip(incident_energy * u"eV")
 velocity = - sqrt(2ke / m)
 @unpack is_Wigner = params_list[1]
 if is_Wigner
-    sigma = 0.4 #in .a.u. so hbar is implicit, 5 is a constant that is chosen to match typical Gaussian nuclear wavepacket conditions
     lambda = 1/(sigma*2*m) #in a.u.
     # Define Gaussian distributions for position and velocity
     x_distribution = Normal(position, sigma)  #position
     v_distribution = Normal(velocity, lambda) #velocity
     @info "Nuclei finalization: Wigner distributed"
+    @info "lambda value: $lambda"
+    @info "sigma value: $sigma"
 end
 
 
-
-function plot_final_KE_hist_csv(params_list::Vector{Dict{String, Any}}, v_distribution)
-
-
+function plot_final_KE_multi_lambda_csv()
     # Create your figure with Minion Pro as the default font
     fig = Figure(
-        size = (HokseonPlots.RESOLUTION[1] * 3, 2.5 * HokseonPlots.RESOLUTION[2]),
-        figure_padding = (1, 20, 2, 2),
+        size = (HokseonPlots.RESOLUTION[1] * 3, 4.5 * HokseonPlots.RESOLUTION[2]),
+        figure_padding = (1, 20, 2, 20),
         fonts = (; regular = projectdir("fonts", "MinionPro-Capt.otf")),
         fontsize = 23
     )
-
-
-    @unpack incident_energy = params_list[1]
     # Create the main axis
     ax = MyAxis(
         fig[1, 1],
         xlabel = "Kinetic Energy / eV",  # Wrap text parts in \text{}
         ylabel = "Probability Density / eV⁻¹",
-        limits = (-0.1, nothing, nothing, nothing),
+        limits = (0.9, 8.1, nothing, 2),
         xgridvisible = false,
         ygridvisible = false
     )
 
-    
-    for (i,param) in enumerate(params_list)
-
-
-        @unpack incident_energy, gap, temperature, is_Wigner = param
-
-        ## go to the directory where the data is stored
-        foldername = params_folder_path(param)
-        final_folder_path = datadir("sims/Individual-Large", foldername, "start_end_positions_KE")
-
-        if !isdir(final_folder_path)
-            error("The directory 'start_end_positions_KE' does not exist at path: $final_folder_path")
-        end
-
-        final_folder_existed_path = glob("*.csv", final_folder_path)
-
-        # finalize an empty array to store the data from all CSV files
-        all_data = []
-
-        # Iterate over each CSV file path
-        for csv_file in final_folder_existed_path
-            # Read the CSV file into a DataFrame
-            df = CSV.read(csv_file, DataFrame)
-            # Append the DataFrame to the array
-            push!(all_data, df)
-        end
-
-        # Combine all DataFrames into one (if needed)
-        combined_data = vcat(all_data...)
-        kinetic_final = combined_data.OutputKineticFinalEV
-        kinetic_initial = combined_data.OutputKineticInitialEV
-
-        inelastic_kinetic_final = combined_data.OutputKineticFinalEV[kinetic_initial .- kinetic_final .> 0.01]
-
-        std = 0.005
-
-        k = kde(inelastic_kinetic_final, Normal(0, std))
-
-        x = range(0.01, k.x[end], length=10000)
-
-        y = pdf(k, x)
-
-        lines!(ax, x, y, color=colormap[i], linewidth=3, label = "IESH Inelastic Final Kinetic Energy")
-
-
-    end
-    
     μ = v_distribution.μ
     σ = v_distribution.σ
     v_range_au = collect(range(μ-4σ, μ+4σ, length=1000))
@@ -159,14 +118,35 @@ function plot_final_KE_hist_csv(params_list::Vector{Dict{String, Any}}, v_distri
     Hartree_to_SI = 27.211386245988
     x_range_SI = ustrip.(auconvert.(u"eV", collect(x_range_au)))
     y_values_SI = y_values_au / Hartree_to_SI
-    lines!(ax, x_range_SI, y_values_SI, color=colormap[3], linewidth=2, label="Initial Wigner Distribution")
-    
+    lines!(ax, x_range_SI, y_values_SI, color=:green, linewidth=3, label="Initial Wigner Distribution")
 
-    Legend(fig[1,1], ax, tellwidth=false, tellheight=false, valign=:top, halign=:right, margin=(5, 0, 5, 0), orientation=:vertical)
+    HEOM_phonon_KE_src = datadir("sims", "HEOM", "KE_data_phonon_coup_strength.txt")
+
+    data_HEOM, header_HEOM = readdlm(HEOM_phonon_KE_src, header=true)
+
+    lambda²_vec = [0, 0.01, 0.1]
+
+    KE_eV = data_HEOM[:,1]
+
+    style_line = [:dash, :dash, :dashdotdot]
+
+    color_line = [:black, :red, :blue]
+
+    for (i,lambda) in enumerate(lambda²_vec)
+        HEOM_distribution_raw = data_HEOM[:,i+1]
+
+        interp = LinearInterpolation(KE_eV, HEOM_distribution_raw)
+
+        area, err = quadgk(interp, minimum(KE_eV), maximum(KE_eV))
+
+        lines!(ax,KE_eV, HEOM_distribution_raw ./ area, color= color_line[i], linewidth=3, label = "HEOM Final Scattering λ² = $(lambda) eV", linestyle=style_line[i])
+    end
+
+    Legend(fig[1,1], ax, "Phononic Bath Included", tellwidth=false, tellheight=false, valign=:top, halign=:left, margin=(0, 0, 5, 0), orientation=:vertical)
 
     return fig
-
 end
 
-
-plot_final_KE_hist_csv(params_list,v_distribution)
+fig = plot_final_KE_multi_lambda_csv()
+#save(plotsdir("HEOM_617_multi_lambdas.pdf"), fig)
+display(fig)

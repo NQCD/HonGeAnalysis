@@ -1,5 +1,5 @@
 using DrWatson
-@quickactivate "HonGeAnalysis"
+@quickactivate "HokseonModelSimulation"
 using Unitful, UnitfulAtomic
 using CairoMakie
 using HokseonPlots
@@ -22,26 +22,23 @@ for file in readdir(srcdir(), join=true) # join=true returns the full path
     end
 end
 
-### Parameters ###
-sigma = 0.4  # Wigner width
-
 all_params = Dict{String, Any}(
-    "trajectories"      => [500],
-    "nstates"           => [150],
-    "dt"                => [0.05],
-    "width"             => [50],
-    "mass"              => [1.00784],
-    "temperature"       => [300.0],
-    "tmax"              => [1001],
-    "discretisation"    => [:GapGaussLegendre],
-    "impuritymodel"     => :Hokseon,
-    "method"            => [:AdiabaticIESH],
-    "incident_energy"   => [0.99],
+    "trajectories" => [500],
+    "nstates" => [150],
+    "dt" => [0.05],
+    "width" => [50],
+    "mass" => [1.00784], # Hydrogen atomic mass
+    "temperature" => [300.0],
+    "tmax" => [1001],
+    "discretisation" => [:GapGaussLegendre],
+    "impuritymodel" => :Hokseon,
+    "method" => [:AdiabaticIESH],
+    "incident_energy" => [6.17], #collect(0.2:0.025:0.8), #collect(0.25:0.25:5)
     "couplings_rescale" => [2.5],
-    "centre"            => [0],
-    "gap"               => [0.49],
-    "decoherence"       => [:EDC],
-    "is_Wigner"         => [true],
+    "centre" => [0],
+    "gap" => [0.49],
+    "decoherence"=>[:EDC],
+    "is_Wigner" => [true],
 )
 
 params_list = dict_list(all_params)
@@ -50,13 +47,9 @@ if typeof(params_list) != Vector{Dict{String, Any}}
     params_list = [params_list]
 end
 
-for param in params_list
-    param["sigma"] = param["is_Wigner"] ? sigma : nothing
-end
-
 
 @unpack mass,incident_energy = params_list[1]
-###final Conditions
+###Initial Conditions
 m = ustrip(auconvert(mass*u"u"))
 position = austrip(5u"Å")
 ke = austrip(incident_energy * u"eV")
@@ -68,12 +61,12 @@ if is_Wigner
     # Define Gaussian distributions for position and velocity
     x_distribution = Normal(position, sigma)  #position
     v_distribution = Normal(velocity, lambda) #velocity
-    @info "Nuclei finalization: Wigner distributed"
+    @info "Nuclei initialization: Wigner distributed"
 end
 
 
 
-function plot_final_KE_hist_csv(params_list::Vector{Dict{String, Any}}, v_distribution)
+function plot_initial_position_hist_csv(params_list::Vector{Dict{String, Any}}, x_distribution)
 
 
     # Create your figure with Minion Pro as the default font
@@ -89,9 +82,9 @@ function plot_final_KE_hist_csv(params_list::Vector{Dict{String, Any}}, v_distri
     # Create the main axis
     ax = MyAxis(
         fig[1, 1],
-        xlabel = "Kinetic Energy / eV",  # Wrap text parts in \text{}
-        ylabel = "Probability Density / eV⁻¹",
-        limits = (-0.1, nothing, nothing, nothing),
+        xlabel = "Position / Å",  # Wrap text parts in \text{}
+        ylabel = "Probability Density / Å⁻¹",
+        limits = (4, 6, -0.1, 2.5),
         xgridvisible = false,
         ygridvisible = false
     )
@@ -103,20 +96,20 @@ function plot_final_KE_hist_csv(params_list::Vector{Dict{String, Any}}, v_distri
         @unpack incident_energy, gap, temperature, is_Wigner = param
 
         ## go to the directory where the data is stored
-        foldername = params_folder_path(param)
-        final_folder_path = datadir("sims/Individual-Large", foldername, "start_end_positions_KE")
+        foldername = savename(param)
+        initials_folder_path = datadir("sims/Individual-Large", foldername, "initial_positions_KE")
 
-        if !isdir(final_folder_path)
-            error("The directory 'start_end_positions_KE' does not exist at path: $final_folder_path")
+        if !isdir(initials_folder_path)
+            error("The directory 'initial_positions_KE' does not exist at path: $initials_folder_path")
         end
 
-        final_folder_existed_path = glob("*.csv", final_folder_path)
+        initial_folder_existed_path = glob("*.csv", initials_folder_path)
 
-        # finalize an empty array to store the data from all CSV files
+        # Initialize an empty array to store the data from all CSV files
         all_data = []
 
         # Iterate over each CSV file path
-        for csv_file in final_folder_existed_path
+        for csv_file in initial_folder_existed_path
             # Read the CSV file into a DataFrame
             df = CSV.read(csv_file, DataFrame)
             # Append the DataFrame to the array
@@ -125,42 +118,28 @@ function plot_final_KE_hist_csv(params_list::Vector{Dict{String, Any}}, v_distri
 
         # Combine all DataFrames into one (if needed)
         combined_data = vcat(all_data...)
-        kinetic_final = combined_data.OutputKineticFinalEV
-        kinetic_initial = combined_data.OutputKineticInitialEV
-
-        inelastic_kinetic_final = combined_data.OutputKineticFinalEV[kinetic_initial .- kinetic_final .> 0.01]
+        kinetic_initial = combined_data.OutputPositionInitialAngstrom
 
         std = 0.005
 
-        k = kde(inelastic_kinetic_final, Normal(0, std))
+        k = kde(kinetic_initial, Normal(0, std))
 
-        x = range(0.01, k.x[end], length=10000)
-
-        y = pdf(k, x)
-
-        lines!(ax, x, y, color=colormap[i], linewidth=3, label = "IESH Inelastic Final Kinetic Energy")
+        lines!(ax, k.x, k.density, color=colormap[i], linewidth=3, label = "IESH Initial Position")
 
 
     end
-    
-    μ = v_distribution.μ
-    σ = v_distribution.σ
+
+    μ = x_distribution.μ
+    σ = x_distribution.σ
     v_range_au = collect(range(μ-4σ, μ+4σ, length=1000))
-    f_v_au = pdf.(v_distribution, v_range_au)
-    # Convert velocity to kinetic energy
-    KE_range_au = 0.5 * m .* v_range_au .^ 2
-    # Transform PDF using change-of-variable: f_E(E) = f_v(v(E)) * |dv/dE|
-    # dv/dE = 1 / (sqrt(2 * m * E))
-    f_KE_au = f_v_au ./ (m .* sqrt.(2 .* KE_range_au ./ m))
-    
-    # Replace original ranges with KE
-    x_range_au = KE_range_au
-    y_values_au = f_KE_au
-    Hartree_to_SI = 27.211386245988
-    x_range_SI = ustrip.(auconvert.(u"eV", collect(x_range_au)))
+    f_v_au = pdf.(x_distribution, v_range_au)
+    x_range_au = v_range_au
+    y_values_au = f_v_au
+    Hartree_to_SI = 0.529177210903
+    x_range_SI = ustrip.(auconvert.(u"Å", collect(x_range_au)))
     y_values_SI = y_values_au / Hartree_to_SI
-    lines!(ax, x_range_SI, y_values_SI, color=colormap[3], linewidth=2, label="Initial Wigner Distribution")
-    
+    lines!(ax, x_range_SI, y_values_SI, color=colormap[3], linewidth=2, label="Wigner Distribution")
+
 
     Legend(fig[1,1], ax, tellwidth=false, tellheight=false, valign=:top, halign=:right, margin=(5, 0, 5, 0), orientation=:vertical)
 
@@ -169,4 +148,4 @@ function plot_final_KE_hist_csv(params_list::Vector{Dict{String, Any}}, v_distri
 end
 
 
-plot_final_KE_hist_csv(params_list,v_distribution)
+plot_initial_position_hist_csv(params_list, x_distribution)

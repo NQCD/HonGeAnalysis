@@ -23,7 +23,7 @@ for file in readdir(srcdir(), join=true) # join=true returns the full path
 end
 
 ### Parameters ###
-is_Wigner = [true]  # can be a vector of Bool
+sigma = 1.0  # Wigner width
 
 all_params = Dict{String, Any}(
     "trajectories"      => [500],
@@ -36,14 +36,12 @@ all_params = Dict{String, Any}(
     "discretisation"    => [:GapGaussLegendre],
     "impuritymodel"     => :Hokseon,
     "method"            => [:AdiabaticIESH],
-    "incident_energy"   => [0.99,1.92, 6.17],
+    "incident_energy"   => [0.99,1.92,6.17],
     "couplings_rescale" => [2.5],
     "centre"            => [0],
     "gap"               => [0.49],
     "decoherence"       => [:EDC],
-    "is_Wigner"         => is_Wigner,
-    # 💡 Elementwise sigma assignment:
-    "sigma"             => [w ? 0.4 : nothing for w in is_Wigner],
+    "is_Wigner"         => [true],
 )
 
 params_list = dict_list(all_params)
@@ -52,11 +50,11 @@ if typeof(params_list) != Vector{Dict{String, Any}}
     params_list = [params_list]
 end
 
+for param in params_list
+    param["sigma"] = param["is_Wigner"] ? sigma : nothing
+end
 
-
-
-
-function plot_final_KE_multi_csv(params_list; saving = false)
+function plot_KE_loss_multi_incidence(params_list; saving = false)
     # Create your figure with Minion Pro as the default font
     fig = Figure(
         size = (HokseonPlots.RESOLUTION[1] * 3, 4.5 * HokseonPlots.RESOLUTION[2]),
@@ -69,14 +67,20 @@ function plot_final_KE_multi_csv(params_list; saving = false)
 
 
     # Define the tick values and sizes
-    major_ticks = -1:1:9
+    major_ticks = -2:1:9
 
-    ymax = [3.01, 1.9, 1.51]
+
+    @unpack sigma = params_list[1]
+    if sigma == 0.4
+        ymax = [3.01, 1.9, 1.51]
+    else
+        ymax = [5.01, 5.5, 2.51]
+    end
 
     axes = [
         Axis(
             fig[i, 1], # Place plots vertically in the first column
-            xlabel = i == n_plots ? "Kinetic Energy / eV" : "", # Use LaTeXStrings L"..."
+            xlabel = i == n_plots ? "Kinetic Energy Loss / eV" : "", # Use LaTeXStrings L"..."
             xgridvisible = false,
             ygridvisible = false,
 
@@ -92,7 +96,7 @@ function plot_final_KE_multi_csv(params_list; saving = false)
 
             # --- Limits ---
             # Slightly pad limits to ensure edge ticks are fully visible
-            limits = (-0.1, 9.1, -0.25, ymax[i]), # Y limits set automatically or define below
+            limits = (-2.1, 6.5, -0.25, ymax[i]), # Y limits set automatically or define below
 
             # --- Major Ticks (Labeled) ---
             xticks = major_ticks,
@@ -118,7 +122,7 @@ function plot_final_KE_multi_csv(params_list; saving = false)
 
     @unpack sigma = params_list[1]
 
-    HEOM_src = datadir("sims", "HEOM", "KE_distributions_data_sigma_$sigma.txt")
+    HEOM_src = datadir("sims", "HEOM", "tighterTolerance", "KE_distributions_data_sigma_$sigma.txt")
 
     HEOM_data, HEOM_header = readdlm(HEOM_src, '\t', header=true)
 
@@ -160,18 +164,20 @@ function plot_final_KE_multi_csv(params_list; saving = false)
         Hartree_to_SI = 27.211386245988
         x_range_SI = ustrip.(auconvert.(u"eV", collect(x_range_au)))
         y_values_SI = y_values_au / Hartree_to_SI
-        lines!(axes[i], x_range_SI, y_values_SI, color=:blue, linewidth=3, label="Initial Wigner Distribution")
+        #lines!(axes[i], x_range_SI, y_values_SI, color=:black, linewidth=3, label="Initial Wigner Distribution")
 
         ## HEOM
 
         HEOM_x = HEOM_data[:,1] # Kinetic Energy
-        HEOM_y = HEOM_data[:,i+2] #./ ustrip(auconvert(u"eV",1)) # Corresponding distribution for the
+        HEOM_y = HEOM_data[:,i+1] #./ ustrip(auconvert(u"eV",1)) # Corresponding distribution for the
 
-        interp = LinearInterpolation(HEOM_x, HEOM_y)
+        HEOM_loss = (HEOM_x .- incident_energy) .* -1
 
-        area, err = quadgk(interp, minimum(HEOM_x), maximum(HEOM_x))
+        interp = LinearInterpolation(HEOM_loss .* -1, HEOM_y)
 
-        lines!(axes[i], HEOM_x, HEOM_y ./ area, color=:black, linewidth=3, label="HEOM Final Scattering")
+        area, err = quadgk(interp, minimum(HEOM_loss .* -1), maximum(HEOM_loss .* -1))
+
+        lines!(axes[i], HEOM_loss, HEOM_y ./ area, color=:blue, linewidth=3, label="HEOM")
 
 
         @unpack incident_energy, gap, temperature, is_Wigner = param
@@ -199,10 +205,13 @@ function plot_final_KE_multi_csv(params_list; saving = false)
 
         # Combine all DataFrames into one (if needed)
         combined_data = vcat(all_data...)
-        kinetic_final = combined_data.OutputKineticFinalEV
-        kinetic_initial = combined_data.OutputKineticInitialEV
+        kinetic_final_all = combined_data.OutputKineticFinalEV
+        kinetic_initial_all = combined_data.OutputKineticInitialEV
 
-        inelastic_kinetic_final = combined_data.OutputKineticFinalEV[kinetic_initial .- kinetic_final .> 0.01]
+        kinetic_final = kinetic_final_all#[1:1500000]
+        kinetic_initial = kinetic_initial_all#[1:1500000]
+
+        inelastic_kinetic_final = kinetic_final[kinetic_initial .- kinetic_final .> 0.1]
 
         inelastic_portion = length(inelastic_kinetic_final) / length(kinetic_final)
 
@@ -214,7 +223,7 @@ function plot_final_KE_multi_csv(params_list; saving = false)
 
         y_whole = pdf(k_whole, x_whole)
 
-        lines!(axes[i], x_whole, y_whole, color=:red, linewidth=3, linestyle = :dash, label = "IESH Final Scattering")
+        lines!(axes[i],incident_energy .- x_whole, y_whole, color=:red, linewidth=3, linestyle = :dash, label = "IESH")
 
         k_inelastic = kde(inelastic_kinetic_final, Normal(0, std))
 
@@ -222,17 +231,18 @@ function plot_final_KE_multi_csv(params_list; saving = false)
 
         y_inelastic = pdf(k_inelastic, x_inelastic)
 
-        lines!(axes[i], x_inelastic, y_inelastic .* inelastic_portion, color=:red, linewidth=3, label = "IESH Final Inelastic Scattering")
+        #lines!(axes[i], x_inelastic, y_inelastic .* inelastic_portion, color=:red, linewidth=3, label = "IESH Final Inelastic Scattering")
         @info "Inelastic Portion for Eᵢ=$(incident_energy) eV: $(inelastic_portion)"
+        @info "Number trajectories: $(length(kinetic_final))"
 
         Label(fig[i,1], Label_list[i]; tellwidth=false, tellheight=false, valign=:top, halign=:left, padding=(10,10,10,10),fontsize=30,font = :bold)
-        Label(fig[i,1], "Eᵢ = $(param["incident_energy"]) eV"; tellwidth=false, tellheight=false, valign=:top, halign=:right, padding=(10,10,10,10),fontsize=25)
+        Label(fig[i,1], "Eᵢ = $(param["incident_energy"]) eV"; tellwidth=false, tellheight=false, valign=:top, halign=:right, padding=(10,5,10,10),fontsize=25)
 
-        if saving
+        if false
             # --------------------------
             # IESH data (x_whole grid)
             # --------------------------
-            iesh_path = projectdir("figure_data", "fig_8", "IESH_finalKE_$(incident_energy)_eV.txt")
+            iesh_path = projectdir("figure_data", "fig_8", "IESH_finalKE_$(incident_energy)_eV_sigma_$(sigma).txt")
 
             KE_IESH_full              = x_whole
             KE_IESH_inelastic         = x_inelastic
@@ -249,7 +259,7 @@ function plot_final_KE_multi_csv(params_list; saving = false)
             # --------------------------
             # HEOM data (HEOM_x grid)
             # --------------------------
-            heom_path = projectdir("figure_data", "fig_8", "HEOM_finalKE_$(incident_energy)_eV.txt")
+            heom_path = projectdir("figure_data", "fig_8", "HEOM_finalKE_$(incident_energy)_eV_sigma_$(sigma).txt")
 
             KE_HEOM         = HEOM_x
             HEOM_probability = HEOM_y ./ area
@@ -268,7 +278,7 @@ function plot_final_KE_multi_csv(params_list; saving = false)
     end
     
 
-    Legend(fig[1,1], axes[1], tellwidth=false, tellheight=false, valign=:top, halign=:center, margin=(5, 0, 5, 0), orientation=:vertical)
+    Legend(fig[1,1], axes[1], "σ = $(sigma)", tellwidth=false, tellheight=false, valign=:top, halign=:center, margin=(5, 0, 5, 0), orientation=:vertical)
     # Hide x-ticks and label from top axis
     hidexdecorations!.(axes[1:n_plots-1], ticks = false, minorticks = false)
 
@@ -290,6 +300,6 @@ end
 
 @unpack sigma = params_list[1]
 
-fig = plot_final_KE_multi_csv(params_list; saving = true)
-save(plotsdir("HEOM_IESH_sigma_$(sigma).pdf"), fig)
+fig = plot_KE_loss_multi_incidence(params_list; saving = false)
+#save(plotsdir("HEOM_IESH_sigma_$(sigma)_tighterTolerance.pdf"), fig)
 display(fig)

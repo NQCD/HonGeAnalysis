@@ -78,7 +78,26 @@ end
 include("plot_energy_loss_tools!.jl")
 
 
-all_params = Dict{String, Any}(
+all_params_old = Dict{String, Any}(
+    "trajectories" => [500],
+    "nstates" => [150],
+    "dt" => [0.05],
+    "width" => [50],
+    "mass" => [1.00784], # Hydrogen atomic mass
+    "temperature" => [300.0],
+    "tmax" => [1001],
+    "discretisation" => [:GapGaussLegendre],
+    "impuritymodel" => :Hokseon,
+    "method" => [:AdiabaticIESH],
+    "incident_energy" => [0.99,1.92,6.17], #collect(0.2:0.025:0.8), #collect(0.25:0.25:5)
+    "couplings_rescale" => [1.95],
+    "centre" => [0],
+    "gap" => [0.49],
+    "decoherence"=>[:EDC],
+    "is_Wigner" => false,
+)
+
+all_params_new = Dict{String, Any}(
     "trajectories" => [500],
     "nstates" => [150],
     "dt" => [0.05],
@@ -97,15 +116,21 @@ all_params = Dict{String, Any}(
     "is_Wigner" => false,
 )
 
-params_list = dict_list(all_params)
+params_list_old = dict_list(all_params_old)
 # just make sure that params_list is a list with Dicts
-if typeof(params_list) != Vector{Dict{String, Any}}
-    params_list = [params_list]
+if typeof(params_list_old) != Vector{Dict{String, Any}}
+    params_list_old = [params_list_old]
+end
+
+params_list_new = dict_list(all_params_new)
+# just make sure that params_list is a list with Dicts
+if typeof(params_list_new) != Vector{Dict{String, Any}}
+    params_list_new = [params_list_new]
 end
 
 
 
-function plot_exp_energy_loss_dist_csv(params_list; saving = false)
+function plot_exp_energy_loss_dist_csv(params_list_old, params_list_new)
     # Create your figure with Minion Pro as the default font
     fig = Figure(
         size = (HokseonPlots.RESOLUTION[1] * 3, 4.5 * HokseonPlots.RESOLUTION[2]),
@@ -114,13 +139,11 @@ function plot_exp_energy_loss_dist_csv(params_list; saving = false)
         fontsize = 23
     )
 
-    n_plots = length(params_list)
+    n_plots = length(params_list_old)
 
 
     # Define the tick values and sizes
     major_ticks = -1:1:6
-
-    ymax = [3.01, 1.9, 1.51]
 
     axes = [
         Axis(
@@ -141,7 +164,7 @@ function plot_exp_energy_loss_dist_csv(params_list; saving = false)
 
             # --- Limits ---
             # Slightly pad limits to ensure edge ticks are fully visible
-            limits = (-1, 6.2, -0.25, ymax[i]), # Y limits set automatically or define below
+            limits = (-1, 6.2, -0.1, nothing), # Y limits set automatically or define below
 
             # --- Major Ticks (Labeled) ---
             xticks = major_ticks,
@@ -167,8 +190,9 @@ function plot_exp_energy_loss_dist_csv(params_list; saving = false)
 
     Label_list = ["a", "b", "c", "d", "e", "f"]
 
-    for (i, (ax, params)) in enumerate(zip(axes, params_list))
-        plot_exp_param_dist_csv!(fig[i,1], ax, params; is_exp_plot=true, saving)
+    for (i, (ax, params)) in enumerate(zip(axes, params_list_new))
+        plot_exp_param_dist_csv!(fig[i,1], ax, params; is_exp_plot=true)
+        plot_exp_param_dist_csv!(fig[i,1], ax, params_list_old[i]; is_exp_plot=false, path = "sims_old/Individual-Large", color_number = 7)
         vlines!(ax, [0.49], color=:black, linestyle=:dash, linewidth=2, label="Band Gap = 0.49 eV")
         i == 1 && Legend(fig[1,1], ax, tellwidth=false, tellheight=false, valign=:top, halign=:center, margin=(0, 0, 0, 0), orientation=:vertical)
         Label(fig[i,1], "Eᵢ = $(params["incident_energy"]) eV"; tellwidth=false, tellheight=false, valign=:top, halign=:right, padding=(10,10,10,10),fontsize=25)
@@ -187,17 +211,12 @@ function plot_exp_energy_loss_dist_csv(params_list; saving = false)
     linkxaxes!(axes...)
 
     # Label on the left side of the figure
-    Label(fig[1:n_plots, 0], "H atom signal / arb. u", rotation = π / 2, tellwidth = true, tellheight = true)
+    Label(fig[1:n_plots, 0], "Probability Density / eV⁻¹", rotation = π / 2, tellwidth = true, tellheight = true)
 
     return fig
 end
 
-
-
-#save(plotsdir("Exp_IESH_incident_energies_dist.pdf"), plot_exp_energy_loss_dist_csv(params_list))
-
-saving = true
-#save(plotsdir("fig_6", "Exp_IESH_incident_energies_dist.pdf"),plot_exp_energy_loss_dist_csv(params_list; saving))
-plot_exp_energy_loss_dist_csv(params_list; saving)
+#save(plotsdir("Exp_IESH_incident_energies_dist_old_new.pdf"), plot_exp_energy_loss_dist_csv(params_list_old, params_list_new))
+plot_exp_energy_loss_dist_csv(params_list_old, params_list_new)
 
 

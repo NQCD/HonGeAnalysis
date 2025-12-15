@@ -120,7 +120,7 @@ function plot_exp_param_dist_csv!(fig, ax,params; is_exp_plot=true, path = "sims
     end
 
     if saving
-        save_txt_path = projectdir("figure_data", "fig_6", "IESH_energyloss_$(params["incident_energy"])_eV.txt")
+        save_txt_path = projectdir("figure_data", "fig_7", "IESH_energyloss_$(params["incident_energy"])_eV.txt")
         headers = "EnergyLoss(eV)"
         data = energy_loss
         save_values2txt(save_txt_path, data; headers = headers)
@@ -129,7 +129,9 @@ function plot_exp_param_dist_csv!(fig, ax,params; is_exp_plot=true, path = "sims
         @info "Not saving energy loss data, set saving = true to save"
     end
     n_loss = length(energy_loss); @unpack incident_energy = params
-    @info "number of $(params["method"]) inelastic events $n_loss for incident_energy $incident_energy eV"
+
+    n_inelastic = length(filter(x -> x > 0.48, energy_loss))
+    @info "number of $(params["method"]) inelastic events $n_inelastic for incident_energy $incident_energy eV"
 
     ## Plotting the experimental data and area under the inelastic peak
     is_exp_plot && (inelastic_intergation = plot_exp_inelastic_data!(ax,incident_energy))
@@ -139,13 +141,13 @@ function plot_exp_param_dist_csv!(fig, ax,params; is_exp_plot=true, path = "sims
     if true
       k_left = kde(energy_loss[energy_loss .< 0.2], Normal(0, 0.003))
       k_right = kde(energy_loss[energy_loss .> 0.2], Normal(0, 0.02))
-      xs_left = range(minimum(energy_loss[energy_loss .< 0.2])-.1, maximum(energy_loss[energy_loss .< 0.2])+.1, length=500)
+      xs_left = range(minimum(energy_loss[energy_loss .< 0.2])-.1, minimum(energy_loss[energy_loss .> 0.2])-.1, length=500)
       xs_right = range(minimum(energy_loss[energy_loss .> 0.2])-.1, maximum(energy_loss[energy_loss .> 0.2])+.1, length=500)
       #ys = pdf.(Ref(k_left), xs) .+ pdf.(Ref(k_right), xs)
       ys_left = pdf.(Ref(k_left), xs_left)
       ys_right = pdf.(Ref(k_right), xs_right)
-      lines!(ax, xs_left, ys_left .* 1, color=colormap[color_number+2], linewidth=3, label="IESH Elastic")
-      lines!(ax, xs_right, ys_right .* 1, color=colormap[color_number], linewidth=3, label="IESH Inelastic")
+      lines!(ax, xs_left, ys_left .* 1, color=colormap[color_number], linewidth=3, label="IESH")
+      lines!(ax, xs_right, ys_right .* 1, color=colormap[color_number], linewidth=3)
     end
 
     interp = LinearInterpolation(k.x, k.density .* 1)

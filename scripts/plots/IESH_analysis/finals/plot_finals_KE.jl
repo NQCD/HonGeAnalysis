@@ -23,7 +23,7 @@ for file in readdir(srcdir(), join=true) # join=true returns the full path
 end
 
 ### Parameters ###
-is_Wigner = [true]  # can be a vector of Bool
+sigma = 1.5  # Wigner width
 
 all_params = Dict{String, Any}(
     "trajectories"      => [500],
@@ -36,20 +36,22 @@ all_params = Dict{String, Any}(
     "discretisation"    => [:GapGaussLegendre],
     "impuritymodel"     => :Hokseon,
     "method"            => [:AdiabaticIESH],
-    "incident_energy"   => [6.17],
+    "incident_energy"   => [0.99],
     "couplings_rescale" => [2.5],
     "centre"            => [0],
     "gap"               => [0.49],
     "decoherence"       => [:EDC],
-    "is_Wigner"         => is_Wigner,
-    # 💡 Elementwise sigma assignment:
-    "sigma"             => [w ? 0.4 : nothing for w in is_Wigner],
+    "is_Wigner"         => [true],
 )
 
 params_list = dict_list(all_params)
 # just make sure that params_list is a list with Dicts
 if typeof(params_list) != Vector{Dict{String, Any}}
     params_list = [params_list]
+end
+
+for param in params_list
+    param["sigma"] = param["is_Wigner"] ? sigma : nothing
 end
 
 
@@ -61,7 +63,6 @@ ke = austrip(incident_energy * u"eV")
 velocity = - sqrt(2ke / m)
 @unpack is_Wigner = params_list[1]
 if is_Wigner
-    sigma = 0.4 #in .a.u. so hbar is implicit, 5 is a constant that is chosen to match typical Gaussian nuclear wavepacket conditions
     lambda = 1/(sigma*2*m) #in a.u.
     # Define Gaussian distributions for position and velocity
     x_distribution = Normal(position, sigma)  #position
@@ -89,10 +90,28 @@ function plot_final_KE_hist_csv(params_list::Vector{Dict{String, Any}}, v_distri
         fig[1, 1],
         xlabel = "Kinetic Energy / eV",  # Wrap text parts in \text{}
         ylabel = "Probability Density / eV⁻¹",
-        limits = (-0.1, nothing, nothing, 2.5),
+        limits = (-0.1, nothing, nothing, nothing),
         xgridvisible = false,
         ygridvisible = false
     )
+
+    μ = v_distribution.μ
+    σ = v_distribution.σ
+    v_range_au = collect(range(μ-4σ, μ+4σ, length=1000))
+    f_v_au = pdf.(v_distribution, v_range_au)
+    # Convert velocity to kinetic energy
+    KE_range_au = 0.5 * m .* v_range_au .^ 2
+    # Transform PDF using change-of-variable: f_E(E) = f_v(v(E)) * |dv/dE|
+    # dv/dE = 1 / (sqrt(2 * m * E))
+    f_KE_au = f_v_au ./ (m .* sqrt.(2 .* KE_range_au ./ m))
+    
+    # Replace original ranges with KE
+    x_range_au = KE_range_au
+    y_values_au = f_KE_au
+    Hartree_to_SI = 27.211386245988
+    x_range_SI = ustrip.(auconvert.(u"eV", collect(x_range_au)))
+    y_values_SI = y_values_au / Hartree_to_SI
+    lines!(ax, x_range_SI, y_values_SI, color=colormap[3], linewidth=3, label="Initial Wigner Distribution σ=$(sigma)")
 
     
     for (i,param) in enumerate(params_list)
@@ -126,7 +145,9 @@ function plot_final_KE_hist_csv(params_list::Vector{Dict{String, Any}}, v_distri
         kinetic_final = combined_data.OutputKineticFinalEV
         kinetic_initial = combined_data.OutputKineticInitialEV
 
-        inelastic_kinetic_final = combined_data.OutputKineticFinalEV[kinetic_initial .- kinetic_final .> 0.01]
+        inelastic_kinetic_final = combined_data.OutputKineticFinalEV[kinetic_initial .- kinetic_final .> 0.1]
+
+        inelastic_portion = length(inelastic_kinetic_final) / length(kinetic_final)
 
         std = 0.005
 
@@ -144,32 +165,15 @@ function plot_final_KE_hist_csv(params_list::Vector{Dict{String, Any}}, v_distri
 
         y_inelastic = pdf(k_inelastic, x_inelastic)
 
-        lines!(ax, x_inelastic, y_inelastic, color=colorscheme[i], linewidth=3, label = "IESH Final Inelastic Scattering")
+        lines!(ax, x_inelastic, y_inelastic .* inelastic_portion, color=colorscheme[i], linewidth=3, label = "IESH Final Inelastic Scattering")
 
 
 
     end
-    
-    μ = v_distribution.μ
-    σ = v_distribution.σ
-    v_range_au = collect(range(μ-4σ, μ+4σ, length=1000))
-    f_v_au = pdf.(v_distribution, v_range_au)
-    # Convert velocity to kinetic energy
-    KE_range_au = 0.5 * m .* v_range_au .^ 2
-    # Transform PDF using change-of-variable: f_E(E) = f_v(v(E)) * |dv/dE|
-    # dv/dE = 1 / (sqrt(2 * m * E))
-    f_KE_au = f_v_au ./ (m .* sqrt.(2 .* KE_range_au ./ m))
-    
-    # Replace original ranges with KE
-    x_range_au = KE_range_au
-    y_values_au = f_KE_au
-    Hartree_to_SI = 27.211386245988
-    x_range_SI = ustrip.(auconvert.(u"eV", collect(x_range_au)))
-    y_values_SI = y_values_au / Hartree_to_SI
-    lines!(ax, x_range_SI, y_values_SI, color=colormap[3], linewidth=3, label="Initial Wigner Distribution")
+
     
 
-    Legend(fig[1,1], ax, tellwidth=false, tellheight=false, valign=:top, halign=:right, margin=(5, 0, 5, 0), orientation=:vertical)
+    Legend(fig[1,1], ax, tellwidth=false, tellheight=false, valign=:top, halign=:left, margin=(5, 0, 5, 0), orientation=:vertical)
 
     return fig
 
