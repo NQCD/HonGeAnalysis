@@ -1,20 +1,14 @@
 using DrWatson
 @quickactivate "HonGeAnalysis"
 using Unitful, UnitfulAtomic
+using DelimitedFiles
 using CairoMakie
 using HokseonPlots
 using ColorSchemes
 using Colors
-using CSV
-using DataFrames
-using DelimitedFiles
-using KernelDensity, Distributions
-using LaTeXStrings
-using QuadGK, Interpolations
 colorscheme = ColorScheme(parse.(Colorant, ["#045275", "#089099", "#7CCBA2", "#FCDE9C", "#F0746E", "#DC3977", "#7C1D6F"]));
 colormap = HokseonPlots.NICECOLORS;
 
-using Glob
 ## Load the scripts in folder HokseonModelSimulation/src
 for file in readdir(srcdir(), join=true) # join=true returns the full path
     if occursin(r"\.jl$", file) # Check if the file ends with .jl
@@ -23,162 +17,58 @@ for file in readdir(srcdir(), join=true) # join=true returns the full path
 end
 
 
+
+
 function plot_fig_4()
 
-    incident_energies = [0.7, 0.4, 0.3]
-    # Create your figure with Minion Pro as the default font
-    fig = Figure(
-        size = (HokseonPlots.RESOLUTION[1] * 3, 4.5 * HokseonPlots.RESOLUTION[2]),
-        figure_padding = (1, 10, 2, 10),
-        fonts = (; regular = projectdir("fonts", "MinionPro-Capt.otf")),
-        fontsize = 23
-    )
+    methods = ["Ehrenfest","IESH"]
 
-    n_plots = length(incident_energies)
+    fig = Figure(size=(HokseonPlots.RESOLUTION[1]*2, 3*HokseonPlots.RESOLUTION[2]), figure_padding=(1, 2, 1, 1), fonts=(;regular=projectdir("fonts", "MinionPro-Capt.otf")), fontsize = 17)
+    ax = MyAxis(fig[1,1], xlabel="Incidence Energy / eV", ylabel= "Energy Loss / eV",limits=(nothing, nothing, nothing, 0.105),xgridvisible=false, ygridvisible=false)
+
+    for (i,method) in enumerate(methods)
+
+        data_path = projectdir("figure_data","fig_4","average_kinetic_loss_$(method).txt")
+
+        data = readdlm(data_path, ' ', skipstart=1)
+        ## scattered data
+        #kinetic_incident, mean_kinetic_end_au, errors_au = read_data_mean_property_end(method, "OutputKineticEnergy"; filter_or_not = true, filter_out_property = "OutputOutcome", filter_out_target = false, data_path="", params_path)
+
+        #mean_kinetic_end = ustrip.(auconvert.(u"eV", mean_kinetic_end_au)); errors = ustrip.(auconvert.(u"eV", errors_au))
+
+        kinetic_incident = data[:, 1]
+        energy_loss = data[:, 2]
+        if method == "IESH"
+            errors = data[:, 3]
+        else 
+            errors = 0
+        end
+
+        label = method == "Ehrenfest" ? "Ehrenfest" : (method == "IESH" ? "IESH" : method)
+
+        scatterlines!(ax, kinetic_incident, energy_loss, color=colorscheme[i+2], markersize=15, label = label, strokewidth = 2, linewidth = 3)
+
+        if i == length(methods)
+            errorbars!(ax, kinetic_incident, energy_loss, errors, color=:red, whiskerwidth = 10, label = "95% CI")
+        elseif errors != 0
+            errorbars!(ax, kinetic_incident, energy_loss, errors, color=:red, whiskerwidth = 10)
+        end
+
+        if i ==length(methods)
+            #lines!(ax, 0.2:0.025:0.8, 0.2:0.025:0.8, color=:blue, linestyle=:dash, linewidth=2)
+            #lines!(ax, 0.2:0.025:0.8, collect(0.2:0.025:0.8) .- constant_loss_alignment, color=:black, linewidth=2)
+            vlines!(ax, [0.49], color=:black, linestyle=:dash, linewidth=2)
+        end
 
 
-    # Define the tick values and sizes
-    major_ticks = 0:20:80
 
-    axes = [
-        Axis(
-            fig[i, 1], # Place plots vertically in the first column
-            xlabel = i == n_plots ? "Time / fs" : "", # Use LaTeXStrings L"..."
-            xgridvisible = false,
-            ygridvisible = false,
-
-            # --- Tick positioning and alignment ---
-            xtickalign = 1,        # Major ticks inside
-            ytickalign = 1,        # Major ticks inside
-            xticksmirrored = false, # No top ticks
-            yticksmirrored = false, # No right ticks
-
-            # --- Axis spines visibility ---
-            topspinevisible = true,
-            rightspinevisible = true,
-
-            # --- Limits ---
-            # Slightly pad limits to ensure edge ticks are fully visible
-            limits = (nothing, nothing, nothing, nothing), # Y limits set automatically or define below
-
-            # --- Major Ticks (Labeled) ---
-            xticks = major_ticks,
-            yticks = LinearTicks(5),          # Example: Let Makie determine Y ticks
-            xticksize = 8,    # <--- SET X MAJOR TICK SIZE
-            yticksize = 8,    # <--- SET Y MAJOR TICK SIZE
-
-            # --- Minor Ticks (Unlabeled, Small) ---
-            xminorticksvisible = true,        # Make X minor ticks visible
-            yminorticksvisible = true,        # Make Y minor ticks visible (if desired)
-            xminortickalign = 1,              # Align X minor ticks inside
-            yminortickalign = 1,              # Align Y minor ticks inside
-            xminorticksize = 4, # <--- SET X MINOR TICK SIZE
-            yminorticksize = 4, # <--- SET Y MINOR TICK SIZE
-
-            # --- Minor Tick Positions ---
-            # Using IntervalsBetween for both axes as an example
-            xminorticks = IntervalsBetween(2),
-            yminorticks = IntervalsBetween(2),  # Example: 1 minor tick between major Y ticks
-
-            xlabelsize = 25,
-
-        ) for i in 1:n_plots
-    ]
-
-    axes_e = [
-        Axis(
-            fig[i, 1], # Place plots vertically in the first column
-            #xlabel = i == n_plots ? "Time / fs" : "", # Use LaTeXStrings L"..."
-            xgridvisible = false,
-            ygridvisible = false,
-
-            
-            yaxisposition = :right,
-            yticklabelcolor = :red,
-            ylabelcolor=:red,
-
-            # --- Tick positioning and alignment ---
-            xtickalign = 1,        # Major ticks inside
-            ytickalign = 1,        # Major ticks inside
-            xticksmirrored = false, # No top ticks
-            yticksmirrored = false, # No right ticks
-
-            # --- Axis spines visibility ---
-            topspinevisible = true,
-            rightspinevisible = true,
-
-            # --- Limits ---
-            # Slightly pad limits to ensure edge ticks are fully visible
-            limits = (nothing, nothing, nothing, 5.5), # Y limits set automatically or define below
-
-            # --- Major Ticks (Labeled) ---
-            xticks = major_ticks,
-            yticks = LinearTicks(5),          # Example: Let Makie determine Y ticks
-            xticksize = 8,    # <--- SET X MAJOR TICK SIZE
-            yticksize = 8,    # <--- SET Y MAJOR TICK SIZE
-
-            # --- Minor Ticks (Unlabeled, Small) ---
-            xminorticksvisible = true,        # Make X minor ticks visible
-            yminorticksvisible = true,        # Make Y minor ticks visible (if desired)
-            xminortickalign = 1,              # Align X minor ticks inside
-            yminortickalign = 1,              # Align Y minor ticks inside
-            xminorticksize = 4, # <--- SET X MINOR TICK SIZE
-            yminorticksize = 4, # <--- SET Y MINOR TICK SIZE
-
-            # --- Minor Tick Positions ---
-            # Using IntervalsBetween for both axes as an example
-            xminorticks = IntervalsBetween(2),
-            yminorticks = IntervalsBetween(2),  # Example: 1 minor tick between major Y ticks
-
-        ) for i in 1:n_plots
-    ]
-
-    #linkxaxes!.(axes, axes_e)
-
-    Label_list = ["a", "b", "c", "d", "e", "f"]
-
-    for (i, (ax, incident_energy)) in enumerate(zip(axes, incident_energies))
-        #plot_exp_param_dist_csv!(ax, params; is_exp_plot=true)
-        linkxaxes!(ax, axes_e[i])
-        ## plot adiabatic state population time
-        times, grounstate_proportion_time, first_exited_proportion_time = begin data = readdlm(projectdir("figure_data","fig_4","Ehrenfest_adiabatic_state_population_time_incident_$(incident_energy)_eV.txt"), ' ', skipstart=1); data[:, 1], data[:, 2], data[:, 3] end
-        lines!(ax, times, grounstate_proportion_time, color=:black, label = "Ground State", linewidth = 3)
-        lines!(ax, times, first_exited_proportion_time, color=:black, label = "First Excited State", linewidth = 3, linestyle = :dash)
-
-        ## plot position time
-        times, position = begin data = readdlm(projectdir("figure_data", "fig_4", "Ehrenfest_position_time_incident_$(incident_energy)_eV.txt"), ' ', skipstart=1); data[:, 1], data[:, 2] end
-        lines!(axes_e[i], times, position, color=:red, label = "H Atom Position", linewidth = 2)
-
-        i == 1 && Legend(fig[1,1], ax, tellwidth=false, tellheight=false, valign=:center, halign=:right, margin=(0, 20, -70, 0), orientation=:vertical)
-        Label(fig[i,1], "Eᵢ = $(incident_energy) eV"; tellwidth=false, tellheight=false, valign=:center, halign=:left, padding=(10,10,-10,10),fontsize=25)
-        Label(fig[i,1], Label_list[i]; tellwidth=false, tellheight=false, valign=:top, halign=:left, padding=(10,10,10,10),fontsize=30,font = :bold)
     end
 
-    # Hide x-ticks and label from top axis
-    hidexdecorations!.(axes[1:n_plots-1], ticks = false, minorticks = false)
-
-    # Hide x-ticks and label from top axis
-    hidexdecorations!.(axes_e[1:n_plots-1], ticks = false, minorticks = false)
-
-
-
-    # Remove the gap between the two rows
-    rowgap!(fig.layout, 0)
-
-    # Optional: share x-axis
-    linkxaxes!(axes...)
-    linkxaxes!(axes_e...)
-
-    # Label on the left side of the figure
-    Label(fig[1:n_plots, 0], "Adiabatic State Population", rotation = π / 2, tellwidth = true, tellheight = true, fontsize = 25)
-    Label(fig[1:n_plots, 2], "x / Å", rotation = -π / 2, tellwidth = true, tellheight = true, color = :red, fontsize = 25, padding = (-10, 0, 0, 0)) # Increase right padding to push it further left
+    Legend(fig[1,1], ax, tellwidth=false, tellheight=false, valign=:top, halign=:left, margin=(5, 5, 5, 5), orientation=:vertical)
 
     return fig
 end
 
+#save(plotsdir("IESHvsEhrenfest", "Energy_loss_analysis_paper.pdf"), plot_fig_3())
 
 plot_fig_4()
-
-
-
-

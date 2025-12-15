@@ -1,74 +1,142 @@
 using DrWatson
 @quickactivate "HonGeAnalysis"
 using Unitful, UnitfulAtomic
-using DelimitedFiles
-using CairoMakie
-using HokseonPlots
-using ColorSchemes
-using Colors
-colorscheme = ColorScheme(parse.(Colorant, ["#045275", "#089099", "#7CCBA2", "#FCDE9C", "#F0746E", "#DC3977", "#7C1D6F"]));
-colormap = HokseonPlots.NICECOLORS;
 
-## Load the scripts in folder HokseonModelSimulation/src
+
+## Load the scripts in folder HonGeAnalysis/src
 for file in readdir(srcdir(), join=true) # join=true returns the full path
     if occursin(r"\.jl$", file) # Check if the file ends with .jl
         include(file)
     end
 end
+include("PES_tools/plot_surfaces_DFT!.jl")
+
+## Load plotting libraries ##
+using CairoMakie
+using HokseonPlots, ColorSchemes, Colors, Printf
+colorscheme = ColorScheme(parse.(Colorant, ["#045275", "#089099", "#7CCBA2", "#FCDE9C", "#F0746E", "#DC3977", "#7C1D6F"]))
+colormap = HokseonPlots.NICECOLORS
+# ------------------------- #
+
+using DelimitedFiles
+using LaTeXStrings
+
+"""
+    plot_merged_PES is to plot the adiabatic PES and DFT ground state on the same figure + diabatic PES.
+
+    Input:
+        parameter_dict : dictionary of parameters
+        DFT : DFT ground state data either a polynomial or a matrix
+        groundstate_align_zero : Bool, default is false
+        reduce_PES : Bool, default is false
+
+    Output:
+        fig : figure object
+"""
+
+function plot_fig_3(parameter_dict,DFT; groundstate_align_zero::Bool=false, reduce_PES::Bool=false, x_ang)
+    ylimitslow = [-2.4,-5]
+    ylimitsup = [2.4,15]
+
+    fig = Figure(
+    figure_padding=(4, 12, 1, 12),
+    fonts=(regular=projectdir("fonts", "MinionPro-Capt.otf"),),
+    size=(HokseonPlots.RESOLUTION[1]*2.5, HokseonPlots.RESOLUTION[2]*3),
+    fontsize=17,
+    )
 
 
+    # Set the row gap between rows to 0
+    # Ensure no x-axis decorations on the top plot (ax2)
+    ax2 = Axis(fig[1,1];
+        xlabel="", # No x-label
+        limits=(0.6, 5, ylimitslow[2], ylimitsup[2]),
+        xgridvisible = false,
+        ygridvisible = false,
+        xticksvisible = false, # Hide x-ticks
+        xticksmirrored = false, # No top ticks
+        xminorticksvisible = false, # Hide minor x-ticks
+        spinewidth = 2, # Set all four spines to thickness 3
+        xtickwidth = 2,  # thicker tick marks
+        ytickwidth = 2, # thicker tick marks
+    )
+
+    # Ensure x-axis decorations ARE present on the bottom plot (ax1)
+    ax1 = Axis(fig[2,1];
+        xlabel="x / Å", # Keep x-label
+        limits=(0.6, 5, ylimitslow[1], ylimitsup[1]),
+        xgridvisible = false,
+        ygridvisible = false,
+        xticksmirrored = false, # No top ticks
+        xminorticksvisible = false, # Show minor x-ticks
+        spinewidth = 2, # Set all four spines to thickness 3
+        xtickwidth = 2,  # thicker tick marks
+        ytickwidth = 2, # thicker tick marks
+        xlabelsize = 20,
+    )
+    
 
 
-function plot_fig_3()
+    Label(fig[1:2, 0], "Energy /eV";
+    rotation = π/2,
+    tellwidth = true, tellheight = true,
+    padding = (0, -10, 0, 0), # Increase right padding to push it further left
+    fontsize = 20,
+    )
 
-    methods = ["Ehrenfest","IESH"]
+    # You might need to adjust this value
+    colsize!(fig.layout, 0, Fixed(10))
 
-    fig = Figure(size=(HokseonPlots.RESOLUTION[1]*2, 3*HokseonPlots.RESOLUTION[2]), figure_padding=(1, 2, 1, 1), fonts=(;regular=projectdir("fonts", "MinionPro-Capt.otf")), fontsize = 17)
-    ax = MyAxis(fig[1,1], xlabel="Incidence Energy / eV", ylabel= "Energy Loss / eV",limits=(nothing, nothing, nothing, 0.105),xgridvisible=false, ygridvisible=false)
+    # plot DFT groundstate and adiabatic surfaces
+    plot_surfaces_DFT!(ax1, parameter_dict, x_ang, DFT; groundstate_align_zero, reduce_PES)
 
-    for (i,method) in enumerate(methods)
+    ## via Hokseon Model ##
 
-        data_path = projectdir("figure_data","fig_3","average_kinetic_loss_$(method).txt")
-
-        data = readdlm(data_path, ' ', skipstart=1)
-        ## scattered data
-        #kinetic_incident, mean_kinetic_end_au, errors_au = read_data_mean_property_end(method, "OutputKineticEnergy"; filter_or_not = true, filter_out_property = "OutputOutcome", filter_out_target = false, data_path="", params_path)
-
-        #mean_kinetic_end = ustrip.(auconvert.(u"eV", mean_kinetic_end_au)); errors = ustrip.(auconvert.(u"eV", errors_au))
-
-        kinetic_incident = data[:, 1]
-        energy_loss = data[:, 2]
-        if method == "IESH"
-            errors = data[:, 3]
-        else 
-            errors = 0
-        end
-
-        label = method == "Ehrenfest" ? "Ehrenfest" : (method == "IESH" ? "IESH" : method)
-
-        scatterlines!(ax, kinetic_incident, energy_loss, color=colorscheme[i+2], markersize=15, label = label, strokewidth = 2, linewidth = 3)
-
-        if i == length(methods)
-            errorbars!(ax, kinetic_incident, energy_loss, errors, color=:red, whiskerwidth = 10, label = "95% CI")
-        elseif errors != 0
-            errorbars!(ax, kinetic_incident, energy_loss, errors, color=:red, whiskerwidth = 10)
-        end
-
-        if i ==length(methods)
-            #lines!(ax, 0.2:0.025:0.8, 0.2:0.025:0.8, color=:blue, linestyle=:dash, linewidth=2)
-            #lines!(ax, 0.2:0.025:0.8, collect(0.2:0.025:0.8) .- constant_loss_alignment, color=:black, linewidth=2)
-            vlines!(ax, [0.49], color=:black, linestyle=:dash, linewidth=2)
-        end
-
-
-
+    x = austrip.(x_ang .* u"Å")
+    hokseonmodel = Hokseon(;parameter_dict...)
+    Twobytwos = NQCModels.potential.(hokseonmodel,x)
+    
+    hokseon_morse, hokseon_U1, hokseon_hybrid = [], [], []
+    for matrix in Twobytwos
+        push!(hokseon_morse, matrix[1, 1])
+        push!(hokseon_U1, matrix[2, 2])
+        push!(hokseon_hybrid, ustrip.(auconvert.(u"eV", matrix[1,2])))
     end
 
-    Legend(fig[1,1], ax, tellwidth=false, tellheight=false, valign=:top, halign=:left, margin=(5, 5, 5, 5), orientation=:vertical)
+    hokseon_morse = ustrip.(auconvert.(u"eV", hokseon_morse))
+    hokseon_U1 = ustrip.(auconvert.(u"eV", hokseon_U1))
 
+    affinity_ionization = hokseon_U1[end] .- hokseon_morse[end]
+
+
+    lines!(ax2, x_ang, hokseon_morse, color=COLORS[3], linewidth=2.5, label=L"U_0(x)")
+    lines!(ax2, x_ang, hokseon_U1, color=COLORS[1], linewidth=2.5, label=L"U_1(x)")
+    lines!(ax2, x_ang, hokseon_U1 .- hokseon_morse, color=COLORS[4], linewidth=2.5, label=L"h(x)")
+    lines!(ax2, x_ang, hokseon_hybrid, color=COLORS[2], linewidth=2.5, label=L"A (x)")
+
+
+    Legend(fig[1,1], ax2, tellwidth=false, tellheight=false, valign=:top, halign=:right, margin=(5, 5, 5, 5), orientation=:horizontal)
+    Label(fig[1,1], latexstring("\$|U_1(5 Å) - U_0(5 Å)| ≈ $(@sprintf("%.3f", affinity_ionization))\$ eV"); tellwidth=false, tellheight=false, valign=:bottom, halign=:right, padding=(5,5,5,5), fontsize=17)
+
+    # label
+    Legend(fig[2,1], ax1, tellwidth=false, tellheight=false, valign=:bottom, halign=:right, margin=(5, 5, 5, 5), orientation=:horizontal)
+
+    Label(fig[1,1], "a"; tellwidth=false, tellheight=false, valign=:top, halign=:left, padding=(5,5,5,5), fontsize=25, font = :bold)
+    Label(fig[2,1], "b"; tellwidth=false, tellheight=false, valign=:top, halign=:left, padding=(5,5,5,5), fontsize=25,  font = :bold)
+
+    hidexdecorations!(ax2, ticks=false, minorticks=false)
+    rowgap!(fig.layout, 0)
+    linkxaxes!(ax1, ax2)
     return fig
 end
 
-#save(plotsdir("IESHvsEhrenfest", "Energy_loss_analysis_paper.pdf"), plot_fig_3())
+groundstate_align_zero = true
 
-plot_fig_3()
+reduce_PES = false
+
+DFT = readdlm(dft_restatom_path)[:,3:4]
+
+x_ang = range(0, 5, length=200)
+
+#save(plotsdir("PES", "Adiabatic_Diabatic_PES_DFT_poster.pdf"), plot_fig_2(chosen_dict,DFT;groundstate_align_zero,reduce_PES, x_ang))
+plot_fig_3(chosen_dict,DFT;groundstate_align_zero,reduce_PES, x_ang)

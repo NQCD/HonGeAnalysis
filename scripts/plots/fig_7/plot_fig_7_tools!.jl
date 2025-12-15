@@ -92,25 +92,48 @@ experimental points and rescales the KDE plot using the experimental integral.
 function plot_exp_param_dist_csv!(fig, ax,params; is_exp_plot=true, path = "sims/Individual-Large", color_number = 3, saving = false)
 
     params_savename = savename(params)
+
     @unpack incident_energy = params
 
-    energy_loss = begin data = readdlm(projectdir("figure_data","fig_6","IESH_energyloss_$(incident_energy)_eV.txt"), ' ', skipstart=1); data[:, 1] end
+    energy_loss = begin data = readdlm(projectdir("figure_data","fig_7","IESH_energyloss_$(incident_energy)_eV.txt"), ' ', skipstart=1); data[:, 1] end
+
+    @info "Total trajectories of incident energy $(params["incident_energy"]) eV: $(length(energy_loss))"
 
     n_loss = length(energy_loss); @unpack incident_energy = params
-    @info "number of $(params["method"]) inelastic events $n_loss for incident_energy $incident_energy eV"
+
+    n_inelastic = length(filter(x -> x > 0.48, energy_loss))
+    @info "number of $(params["method"]) inelastic events $n_inelastic for incident_energy $incident_energy eV"
 
     ## Plotting the experimental data and area under the inelastic peak
     is_exp_plot && (inelastic_intergation = plot_exp_inelastic_data!(ax,incident_energy))
 
     k = kde(energy_loss, Normal(0, 0.02))
 
-    lines!(ax, k.x, k.density .* 1 , color=colormap[color_number], linewidth=3, label="IESH")
+    if true
+      k_left = kde(energy_loss[energy_loss .< 0.2], Normal(0, 0.003))
+      k_right = kde(energy_loss[energy_loss .> 0.2], Normal(0, 0.02))
+      xs_left = range(minimum(energy_loss[energy_loss .< 0.2])-.1, minimum(energy_loss[energy_loss .> 0.2])-.1, length=500)
+      xs_right = range(minimum(energy_loss[energy_loss .> 0.2])-.1, maximum(energy_loss[energy_loss .> 0.2])+.1, length=500)
+      #ys = pdf.(Ref(k_left), xs) .+ pdf.(Ref(k_right), xs)
+      ys_left = pdf.(Ref(k_left), xs_left)
+      ys_right = pdf.(Ref(k_right), xs_right)
+      lines!(ax, xs_left, ys_left .* 1, color=colormap[color_number], linewidth=3, label="IESH")
+      lines!(ax, xs_right, ys_right .* 1, color=colormap[color_number], linewidth=3)
+    end
 
     interp = LinearInterpolation(k.x, k.density .* 1)
 
     IESH_integration = quadgk(interp, minimum(k.x), maximum(k.x))[1]
 
+    IESH_inelastic_intergation = quadgk(interp, 0.48, maximum(k.x))[1]
+
+    scaling = 1 / IESH_inelastic_intergation
+
+    #lines!(ax, k.x, k.density .* scaling , color=colormap[color_number], linewidth=3, label="IESH")
+
     @info "IESH integration: $IESH_integration"
+
+    @info "IESH inelastic peak integration: $(IESH_inelastic_intergation .* scaling)"
     @info "Inelastic peak experiments integration: $inelastic_intergation"
 
 
