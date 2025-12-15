@@ -7,6 +7,18 @@
 The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhokseson.github.io) and aims to reproduce the simulations and plots showed in the manuscript:
 > [A Haldane-Anderson Model Hamiltonian for Hyperthermal Hydrogen Scattering from a Semiconductor Surface](https://about:blank) by Xuexun Lu, Nils Hertl, Sara Oregioni, Riley J Preston, Samuel Louis Rudge, Michael Thoss, Rocco Martinazzo and Reinhard J. Maurer.
 
+<details>
+<summary><strong>Schematic of H-Atom Scattering from Ge(111)</strong></summary>
+
+
+<p align="center">
+  <img src="README_fig/schematics/HonGeschematic.png" width="500" style="margin-right:20px;" />
+</p><p align="center">
+  <em>Figure 1. 3-D Schematic of an H atom scattering from Ge(111) surface.</em>
+</p>
+
+However, this project applies 1-D analytical model to represent the nonadiabatic effects during the scattering process. **Figure 1. is only for illustrative purpose.**
+</details>
 
 #### ONLY FOR Hokseon
 
@@ -119,6 +131,7 @@ The H atom scattering on Ge(111) surface data is published and available in
 
 
 
+
 <details>
 <summary><strong>Acknowledgments</strong></summary>
 
@@ -137,5 +150,26 @@ The H atom scattering on Ge(111) surface data is published and available in
 - Archer2 UK National Supercomputing Service
 - Sulis HPC Midlands+ Computing Centre 
 - bwHPC (Baden-Württemberg High Performance Computing)
+
+**Hosting Institutions**
+
+<p align="center">
+  <a href="https://warwick.ac.uk" target="_blank">
+    <img src="https://warwick.ac.uk/static_war/render/id7/images/wordmark.svg.136055278947" width="200" style="margin-right:20px;" alt="University of Warwick" />
+  </a>
+  <a href="https://www.uni-freiburg.de" target="_blank">
+    <img src="https://www.bwhpc.de/img/Logos_Unis/UFR-Wortmarke-Grundform_Blau_CMYK.jpg" width="200" style="margin-right:20px;" alt="University of Freiburg" />
+  </a>
+  <a href="https://www.univie.ac.at" target="_blank">
+    <img src="https://www.univie.ac.at/_assets/12d6b27de3745b4c3b247e6ea4f9bbcc/Images/Logos/univie.svg" width="200" style="margin-right:20px;" alt="University of Vienna" />
+  </a>
+  <a href="https://www.unimi.it" target="_blank">
+    <img src="https://4euplus.eu/cuni_new_web/dist/images/4eu/logo_detail_milano_2x.png?v=1.1.1" width="200" alt="University of Milan" />
+  </a>
+</p>
+
+
 </details>
+
+
 
