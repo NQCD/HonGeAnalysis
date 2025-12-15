@@ -1,7 +1,7 @@
 using Distributed
 
 # Define the function
-function get_job_id()
+@everywhere function get_job_id()
     try
         if haskey(ENV, "SLURM_JOB_ID")
             job_id = ENV["SLURM_JOB_ID"]
@@ -25,7 +25,7 @@ function get_job_id()
 end
 
 # Main process
-const GLOBAL_JOB_ID, ID_SOURCE = get_job_id()
+@everywhere const GLOBAL_JOB_ID, ID_SOURCE = get_job_id()
     
 @everywhere const WORKER_JOB_ID = $GLOBAL_JOB_ID  # Note the $ to interpolate the main process value
 @everywhere const JOB_ID_SOURCE = $ID_SOURCE
