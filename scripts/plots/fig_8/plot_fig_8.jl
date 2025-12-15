@@ -162,7 +162,7 @@ function plot_fig_8(params_list)
 
         ## HEOM
 
-        HEOM_fig_data_path = projectdir("figure_data", "fig_8", "HEOM_finalKE_$(incident_energy)_eV_sigma_$(sigma).txt")
+        HEOM_fig_data_path = projectdir("figure_data", "fig_8_S7_S8", "HEOM_finalKE_$(incident_energy)_eV_sigma_$(sigma).txt")
 
         HEOM_fig_data, header = readdlm(HEOM_fig_data_path, header=true)
 
@@ -173,7 +173,7 @@ function plot_fig_8(params_list)
 
         ## IESH full
 
-        final_IESH_path = projectdir("figure_data", "fig_8", "IESH_finalKE_$(incident_energy)_eV_sigma_$(sigma).txt")
+        final_IESH_path = projectdir("figure_data", "fig_8_S7_S8", "IESH_finalKE_$(incident_energy)_eV_sigma_$(sigma).txt")
 
         final_IESH_data, header = readdlm(final_IESH_path, header=true)
 
