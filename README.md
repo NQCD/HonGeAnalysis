@@ -158,7 +158,7 @@ The H atom scattering on Ge(111) surface data is published and available in
     <img src="https://warwick.ac.uk/static_war/render/id7/images/wordmark.svg.136055278947" width="200" style="margin:10px;" alt="University of Warwick" />
   </a>
   <a href="https://www.uni-freiburg.de" target="_blank">
-    <img src="https://www.bwhpc.de/img/Logos_Unis/UFR-Wortmarke-Grundform_Blau_CMYK.jpg" width="200" style="margin:10px;" alt="University of Freiburg" />
+    <img src="https://cd.uni-freiburg.de/wp-content/uploads/2023/02/UFR-vorlage-designsystem-typo-farben-V1.93.png" width="200" style="margin:10px;" alt="University of Freiburg" />
   </a>
   <a href="https://www.univie.ac.at" target="_blank">
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/University_of_Vienna_wordmark.svg/250px-University_of_Vienna_wordmark.svg.png" width="200" style="margin:10px;" alt="University of Vienna" />
