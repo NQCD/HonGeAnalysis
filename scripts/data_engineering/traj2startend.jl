@@ -85,7 +85,7 @@ for param in params_list
     # Arguments:
     - `datanames::Vector{String}`: Names of the simulated output data files.
     - `foldername::String`: Parameters of the simulation.
-    - `kinetic_loss_folder_path::String`: Path to the folder where kinetic loss data is saved.
+    - `start_end_folder_path::String`: Path to the folder where kinetic loss data is saved.
     - `loss_folder_existed_files::Vector{String}`: Names of already processed kinetic loss data files.
     - `objective_datanames::Vector{String}`: Names of unprocessed simulated output data files.
 
@@ -99,15 +99,15 @@ for param in params_list
     6. Return the filtered list of `.h5` files as `objective_datanames`.
     """
 
-    kinetic_loss_folder_path = datadir("sims/Individual-Large", foldername, "scattered_kinetic_loss")
+    start_end_folder_path = datadir("sims/Individual-Large", foldername, "start_end_positions_KE")
 
     # Check if the directory exists, and create it if it doesn't
     try
-        mkdir(kinetic_loss_folder_path)
+        mkdir(start_end_folder_path)
     catch e
     end
 
-    loss_folder_existed_files = basename.(glob("*.csv", kinetic_loss_folder_path))
+    loss_folder_existed_files = basename.(glob("*.csv", start_end_folder_path))
 
     # Extract base names (without extensions) from loss_folder_existed_files
     existing_basenames = replace.(loss_folder_existed_files, r"\.csv" => "")
@@ -123,7 +123,7 @@ for param in params_list
     # Arguments:
     - `objective_datanames::Vector{String}`: Names of the `.h5` files to be processed.
     - `directory::String`: Path to the directory containing the `.h5` files.
-    - `kinetic_loss_folder_path::String`: Path to the folder where the resulting `.csv` files will be saved.
+    - `start_end_folder_path::String`: Path to the folder where the resulting `.csv` files will be saved.
     - `csv_file_count::Int`: A global counter to track the number of `.csv` files created.
 
     # Workflow:
@@ -168,17 +168,29 @@ for param in params_list
         for (filename, trajectories) in objective_results_scattered
             # Extract the base name for the CSV file
             csv_filename = replace(filename, r"\.h5" => ".csv")
-            
-            # Compute the differences for each trajectory
-            kinetic_loss = [traj["OutputKineticEnergy"][1] - traj["OutputKineticEnergy"][end] for traj in trajectories]
 
-            kinetic_loss_eV = ustrip.(auconvert.(u"eV", kinetic_loss))
+            # Compute kinetic energy loss for each trajectory
+            kinetic_final = [traj["OutputKineticEnergy"][end] for traj in trajectories]
+            kinetic_initial = [traj["OutputKineticEnergy"][1] for traj in trajectories]
+            kinetic_final_eV = ustrip.(auconvert.(u"eV", kinetic_final))
+            kinetic_initial_eV = ustrip.(auconvert.(u"eV", kinetic_initial))
+            # Compute positions for each trajectory
+            position_final = [traj["OutputPosition"][end] for traj in trajectories]
+            position_initial = [traj["OutputPosition"][1] for traj in trajectories]
+            positions_final_Angstrom = ustrip.(auconvert.(u"Å", position_final))
+            positions_initial_Angstrom = ustrip.(auconvert.(u"Å", position_initial))
             
             # Create a DataFrame to store the results
-            df = DataFrame(OutputKineticLossEV = kinetic_loss_eV)
+            df = DataFrame(
+                OutputKineticInitialEV = kinetic_initial_eV,
+                OutputKineticFinalEV   = kinetic_final_eV,
+                OutputPositionInitialAngstrom = positions_initial_Angstrom,
+                OutputPositionFinalAngstrom   = positions_final_Angstrom,
+            )
+
             
             # Save the DataFrame to a CSV file
-            CSV.write(joinpath(kinetic_loss_folder_path, csv_filename), df)
+            CSV.write(joinpath(start_end_folder_path, csv_filename), df)
             
             # Increment the counter
             global csv_file_count += 1  # Explicitly modify the global variable

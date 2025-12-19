@@ -22,7 +22,6 @@ include("../../src/job_threads.jl")
 @everywhere using Glob
 @everywhere using NQCDynamics
 @everywhere using NQCModels
-@everywhere include(srcdir("HGe_model", "HGemodel.jl"))
 
 ### Termination conditions ###
 @everywhere function termination_condition(u, t, integrator)::Bool
@@ -110,7 +109,8 @@ end
 
     ###Return
     return run_dynamics(sim, (0.0, tmax), dist;
-        output=(OutputKineticEnergy, OutputPosition, OutputOutcome, OutputDiscreteState, OutputAdiabaticPopulation),#, OutputDiscreteState, OutputSurfaceHops),
+        output=(OutputKineticEnergy, OutputPosition, OutputOutcome, OutputFinalDiscreteState),#, OutputDiscreteState, OutputSurfaceHops),
+        #saveat = 100 * dt, # saveat should be unitless
         dt = dt * u"fs",
         callback = terminate,
         trajectories,

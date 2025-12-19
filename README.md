@@ -20,45 +20,11 @@ The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhok
 However, this project applies 1-D analytical model to represent the nonadiabatic effects during the scattering process. **Figure 1. is only for illustrative purpose.**
 </details>
 
-#### ONLY FOR Hokseon
-
-<details>
-<summary><strong>Hokseon needs to read this</strong></summary>
-
-Hope the future me would thank the Hokseon who is wrapping up this repository. This repo should be ready in some machines that Hokseon can use by the time he comes back to it. i.e. Archer2 and Taskfarm.
-- If you need to configure a new machine, please follow the step you wrote below. Because with the given UUID of NQCDynamics and NQCModels, julia package git installer would automatically download v0.15.0. Make sure that you do
-```julia
-(HonGeAnalysis) pkg> add NQCDynamics@0.13.4
-```
-in your configure script for that machine.Same applies to `NQCModels.jl` which has to be either v0.8.20 or v0.8.19.
-- Make sure `data` folder has folder `sims`. Within `sims` should have `Ehrenfest`, `IESH` and `Individual-Large`. The first two are used for storing the raw `.h5` output from NQCD simulation. Each of the `.h5` should be named after the simulation parameters ([parameters_IESH.jl](/scripts/simulation_IESH/parameters_IESH.jl) for reference). The given run scripts (Ehrenfest/IESH) would skip taht simulation if the conjugate output `.h5` exist in folder `Ehrenfest` or `IESH`.
-- When you need to do repeating simulations (mostly IESH for energy loss/ sticking probability convergence), make sure you turn the `is_dividual_large_saving = true` in the parameters_IESH.jl for simualtions. For example, 500 trajectories for a `.h5` for 1000 times.
-- When you have generated massive amount of .h5 file under folder `Individual-Large/your_simulation_parameter...`, you need to process/extract the useful properties by 
-1. Run [traj2kineticloss.jl](/scripts/data_engineering/traj2kineticloss.jl) and [traj2nstick.jl](/scripts/data_engineering/traj2nstick.jl) (order of executing does not matter since they are independent). These two generate folder `scattering_counting` and `scattered_kinetic_loss` containing `.csv` with the desired properities (including confidence errors) from the NQCD simulated `.h5` data.  The `.csv` is easy for storage and rsyncing between machines.
-- Rsyncing the whole folder from HPCs to storage machine to process the [traj2kineticloss.jl](/scripts/data_engineering/traj2kineticloss.jl) and [traj2nstick.jl](/scripts/data_engineering/traj2nstick.jl). `rsync -avn` is a dry run. testing whether the stuff can be send to desitnation. The actually syncing need `rsync -av` 
-
-**Whole folder rsyncing**
-```bash
-rsync -avn your-path-to-the-folder destination
-```
-**Files inside folder rsyncing**
-```bash
-rsync -avn your-path-to-the-folder/ destination
-```
-
-- Rsyncing the processed `.csv` to a local laptop:
-**Exclude .h5 files**
-```bash
-rsync -avn --exclude='*.h5' source destination
-```
-</details>
 
 
+### Instructions from the author
 
-
-## Step-by-step instructions from the author
-
-### Activate the Julia environment
+##### Activate the Julia environment
 <details>
 <summary><strong>Steps</strong></summary>
 
@@ -100,13 +66,63 @@ After cloning this repository to your machine, you need to the followings
 
 For those who are confident with Julia and skip the folded instructions, you are highly recommended to check your installed version of `NQCDynamics.jl` and `NQCModels.jl` packages are v0.13.4 and v0.8.19 respectively. If you are not sure, please follow the folded content in **Steps**.
 
-#### Data availibility
-While you are configurating your Julia environment with [HonGeAnalysis](https://github.com/NQCD/HonGeAnalysis), you are recommended to download the conjugate data of this repository in the meantime. Please unzip the downloaded compressed file under directory `HonGeAnalysis/`. It contains the following data:
 
-##### Figure data
-In the directory [figure_data](./figue_data/), you can find the data used to generate the figures in the manuscript. Those data are stored in `.txt` files, which are easy to be read by users.
-##### NQCD Simulated data
-You can find the simulated data from the `data/sims` directory.
+##### Figure data & plotting scripts
+In the directory `figure_data`, you can find the data in `.txt` used to generate the figures in the manuscript. The Julia scripts for those plots sit in the `scripts/plots`. 
+
+
+##### Ab-initio calculated data
+The ab-initio data is stored in directory `data/ab-initio_cals`. The specs of the DFT calculations is illustrated the manuscript.
+
+
+##### Experimental data
+The H atom scattering on Ge(111) surface data is published and available in 
+> 
+[Krüger, K., Wang, Y., Tödter, S. et al. Hydrogen atom collisions with a semiconductor efficiently promote electrons to the conduction band. Nat. Chem. 15, 326–331 (2023).](https://doi.org/10.1038/s41557-022-01085-x)
+
+
+<details>
+<summary><strong>Practical Tips</strong></summary>
+
+This repo should be ready in some machines that Hokseon can use by the time he comes back to it. i.e. Archer2 and Taskfarm.
+- If you need to configure a new machine, please follow the step you wrote below. Because with the given UUID of NQCDynamics and NQCModels, julia package git installer would automatically download v0.15.0. Make sure that you do
+```julia
+(HonGeAnalysis) pkg> add NQCDynamics@0.13.4
+```
+in your configure script for that machine.Same applies to `NQCModels.jl` which has to be either v0.8.20 or v0.8.19.
+- Make sure `data` folder has folder `sims`. Within `sims` should have `Ehrenfest`, `IESH` and `Individual-Large`. The first two are used for storing the raw `.h5` output from NQCD simulation. Each of the `.h5` should be named after the simulation parameters ([parameters_IESH.jl](/scripts/simulation_IESH/parameters_IESH.jl) for reference). The given run scripts (Ehrenfest/IESH) would skip taht simulation if the conjugate output `.h5` exist in folder `Ehrenfest` or `IESH`.
+- When you need to do repeating simulations (mostly IESH for energy loss/ sticking probability convergence), make sure you turn the `is_dividual_large_saving = true` in the parameters_IESH.jl for simualtions. For example, 500 trajectories for a `.h5` for 1000 times.
+- When you have generated massive amount of .h5 file under folder `Individual-Large/your_simulation_parameter...`, you need to process/extract the useful properties by 
+1. Run [traj2kineticloss.jl](/scripts/data_engineering/traj2kineticloss.jl) and [traj2nstick.jl](/scripts/data_engineering/traj2nstick.jl) (order of executing does not matter since they are independent). These two generate folder `scattering_counting` and `scattered_kinetic_loss` containing `.csv` with the desired properities (including confidence errors) from the NQCD simulated `.h5` data.  The `.csv` is easy for storage and rsyncing between machines.
+- Rsyncing the whole folder from HPCs to storage machine to process the [traj2kineticloss.jl](/scripts/data_engineering/traj2kineticloss.jl) and [traj2nstick.jl](/scripts/data_engineering/traj2nstick.jl). `rsync -avn` is a dry run. testing whether the stuff can be send to desitnation. The actually syncing need `rsync -av` 
+
+**Whole folder rsyncing**
+```bash
+rsync -avn your-path-to-the-folder destination
+```
+**Files inside folder rsyncing**
+```bash
+rsync -avn your-path-to-the-folder/ destination
+```
+
+- Rsyncing the processed `.csv` to a local laptop:
+**Exclude .h5 files**
+```bash
+rsync -avn --exclude='*.h5' source destination
+```
+
+##### NQCD output data
+You should save NQCD output in `data/sims` directory. After running the simulations, you would have the following structure
+```data
+└── sims
+    ├── Ehrenfest
+    │   ├── configuration.h5
+    ├── IESH
+    │   ├── configuration.h5
+    └── Individual-Large
+        └── configuration
+            ├──JOB_ID_XXXXX.h5
+```
 
 1. You can find the raw data files with extension of `.h5` which contain the raw ouput from the [NQCDynamics.jl](https://github.com/NQCD/NQCDynamics.jl) simulation from the folder Ehrenfest and IESH. The name of the files indicate the simulation parameters, e.g.,
 ```
@@ -117,23 +133,13 @@ contains the simulation of 500 trajctories of the Ehrenfest dynamics with desire
 ```
 centre=0_couplings_rescale=1.95_decoherence=EDC_discretisation=GapGaussLegendre_dt=0.05_gap=0.49_impuritymodel=Hokseon_incident_energy=0.25_is_Wigner=false_mass=1.01_method=AdiabaticIESH_nstates=150_temperature=300.0_tmax=1001_trajectories=500_width=50
 ```
-Inside, it contains the processed data from a large set of simulations and stored in the `.csv` files. Those `.csv` files are named with the distinct job id of each julia simulation. 
+Inside, it contains the processed data from a large set of simulations and stored in the `.csv` files. Those `.csv` files are named with the distinct job id of each julia simulation.
+</details>
 
-
-##### Ab-initio calculated data
-The ab-initio data is stored in directory `data/ab-initio_cals`. The specs of the DFT calculations is illustrated in the repo conjugate paper.
-
-
-##### Experimental data
-The H atom scattering on Ge(111) surface data is published and available in 
-> 
-[Krüger, K., Wang, Y., Tödter, S. et al. Hydrogen atom collisions with a semiconductor efficiently promote electrons to the conduction band. Nat. Chem. 15, 326–331 (2023).](https://doi.org/10.1038/s41557-022-01085-x)
-
-
-
+<p>&nbsp;</p>
 
 <details>
-<summary><strong>Acknowledgments</strong></summary>
+<summary><strong>Acknowledgements</strong></summary>
 
 **Fundings**
 
@@ -145,7 +151,7 @@ The H atom scattering on Ge(111) surface data is published and available in
 - UKRI Future Leaders Fellowship
 - UKRI Frontier Research Grant
 
-**Computing Resources**
+**Computational Resources**
 - Scientific Computing Research Technology Platform (SCRTP) in University of Warwick
 - Archer2 UK National Supercomputing Service
 - Sulis HPC Midlands+ Computing Centre 
@@ -168,9 +174,8 @@ The H atom scattering on Ge(111) surface data is published and available in
   </a>
 </p>
 
-
-
 </details>
+
 
 
 

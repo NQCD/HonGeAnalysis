@@ -1,6 +1,6 @@
 using DrWatson
 ### Parameters ###
-is_Wigner = [true]  # can be a vector of Bool
+sigma = 2.5  # Wigner width
 
 all_params = Dict{String, Any}(
     "trajectories"      => [500 for i in 1:10^4],
@@ -13,14 +13,12 @@ all_params = Dict{String, Any}(
     "discretisation"    => [:GapGaussLegendre],
     "impuritymodel"     => :Hokseon,
     "method"            => [:AdiabaticIESH],
-    "incident_energy"   => [6.17],
+    "incident_energy"   => [1.92],
     "couplings_rescale" => [2.5],
     "centre"            => [0],
     "gap"               => [0.49],
     "decoherence"       => [:EDC],
-    "is_Wigner"         => is_Wigner,
-    # 💡 Elementwise sigma assignment:
-    "sigma"             => [w ? 1.0 : nothing for w in is_Wigner],
+    "is_Wigner"         => [true],
 )
 
 
@@ -33,6 +31,9 @@ if typeof(params_list) != Vector{Dict{String, Any}}
     params_list = [params_list]
 end
 
+for param in params_list
+    param["sigma"] = param["is_Wigner"] ? sigma : nothing
+end
 
 
 
