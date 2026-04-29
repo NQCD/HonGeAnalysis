@@ -3,7 +3,7 @@ using DrWatson
 using Distributions
 using Interpolations
 using QuadGK
-using NQCModels
+using NQCModels; include(srcdir("HGe_model", "HGemodel.jl"))
 using CairoMakie
 using Unitful, UnitfulAtomic
 using HokseonPlots, ColorSchemes, Colors, Printf
