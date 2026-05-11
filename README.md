@@ -10,7 +10,7 @@ The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhok
 ### Schematic Animation of H-Atom Scattering from Ge(111)
 
 <p align="center">
-  <video src="docs/animation/HonGe_ase_animation.mp4" width="600" height="400" controls loop muted playsinline />
+  <img src="docs/animation/HonGe_ase_animation.gif" width="600" alt="H atom scattering from Ge(111) animation" />
 </p>
 <p align="center">
   <em>Animation 1. Schematic animation of an H atom scattering from the Ge(111) surface (diamond-cubic slab built with ASE). The trajectory, surface vibrations, and electron excitations are illustrative only.</em>
