@@ -7,13 +7,13 @@
 The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhokseson.github.io) and aims to reproduce the simulations and plots showed in the manuscript on JCP:
 > [A Haldane-Anderson Model Hamiltonian for Hyperthermal Hydrogen Scattering from a Semiconductor Surface](https://doi.org/10.1063/5.0297254) by Xuexun Lu, Nils Hertl, Sara Oregioni, Riley J Preston, Samuel Louis Rudge, Michael Thoss, Rocco Martinazzo and Reinhard J. Maurer.
 
-### Schematic Animation of H-Atom Scattering from Ge(111)
+### Schematic Animation of H-Atom Scattering from Ge(111)-c(2×8)
 
 <p align="center">
-  <img src="docs/animation/HonGe_ase_animation.gif" width="600" alt="H atom scattering from Ge(111) animation" />
+  <img src="docs/animation/HonGe_c2x8_animation.gif" width="600" alt="H atom scattering from Ge(111)-c(2x8) animation" />
 </p>
 <p align="center">
-  <em>Animation 1. Schematic animation of an H atom scattering from the Ge(111) surface (diamond-cubic slab built with ASE). The trajectory, surface vibrations, and electron excitations are illustrative only.</em>
+  <em>Animation 1. Schematic animation of an H atom scattering from the Ge(111)-c(2×8) reconstructed surface. Gold spheres are T<sub>4</sub> adatoms and magenta spheres are rest atoms (¼ ML each). The trajectory, surface vibrations, and electron excitations are illustrative only.</em>
 </p>
 
 However, this project applies a 1-D analytical model to represent the nonadiabatic effects during the scattering process. **Animation 1 is for illustrative purpose only.**
