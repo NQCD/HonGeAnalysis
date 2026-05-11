@@ -4,21 +4,20 @@
 
 
 
-The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhokseson.github.io) and aims to reproduce the simulations and plots showed in the manuscript:
+The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhokseson.github.io) and aims to reproduce the simulations and plots showed in the manuscript on JCP:
 > [A Haldane-Anderson Model Hamiltonian for Hyperthermal Hydrogen Scattering from a Semiconductor Surface](https://doi.org/10.1063/5.0297254) by Xuexun Lu, Nils Hertl, Sara Oregioni, Riley J Preston, Samuel Louis Rudge, Michael Thoss, Rocco Martinazzo and Reinhard J. Maurer.
 
-<details>
-<summary><strong>Schematic of H-Atom Scattering from Ge(111)</strong></summary>
-
+### Schematic Animation of H-Atom Scattering from Ge(111)
 
 <p align="center">
-  <img src="README_fig/schematics/HonGeschematic.png" width="500" style="margin-right:20px;" />
-</p><p align="center">
-  <em>Figure 1. 3-D Schematic of an H atom scattering from Ge(111) surface.</em>
+  <video src="docs/animation/HonGe_ase_animation.mp4" width="600" height="400" controls loop muted playsinline />
+</p>
+<p align="center">
+  <em>Animation 1. Schematic animation of an H atom scattering from the Ge(111) surface (diamond-cubic slab built with ASE). The trajectory, surface vibrations, and electron excitations are illustrative only.</em>
 </p>
 
-However, this project applies 1-D analytical model to represent the nonadiabatic effects during the scattering process. **Figure 1. is only for illustrative purpose.**
-</details>
+However, this project applies a 1-D analytical model to represent the nonadiabatic effects during the scattering process. **Animation 1 is for illustrative purpose only.**
+
 
 
 
