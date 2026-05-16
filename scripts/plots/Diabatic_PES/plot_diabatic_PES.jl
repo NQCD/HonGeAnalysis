@@ -8,7 +8,7 @@ using LinearAlgebra
 using Serialization
 
 include("parameters_PES.jl")
-
+include(srcdir("HGe_model", "HGemodel.jl"))
 
 
 ## Load plotting libraries ##
@@ -58,7 +58,7 @@ function plot_molecular_potentials(parameter_dict,x_ang)
 
 
     Legend(fig[1,1], ax1, tellwidth=false, tellheight=false, valign=:bottom, halign=:right, margin=(5, 5, 5, 5), orientation=:horizontal)
-    #Label(fig[1,1], latexstring("\$|U_1(5 Å) - U_0(5 Å)| ≈ $(@sprintf("%.3f", affinity_ionization))\$ eV"); tellwidth=false, tellheight=false, valign=:bottom, halign=:right, padding=(5,5,5,5), fontsize=17)
+    Label(fig[1,1], latexstring("\$|U_1(5 Å) - U_0(5 Å)| ≈ $(@sprintf("%.3f", affinity_ionization))\$ eV"); tellwidth=false, tellheight=false, valign=:top, halign=:right, padding=(5,5,5,5), fontsize=17)
     
     return fig
 end
