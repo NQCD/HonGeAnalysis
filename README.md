@@ -4,7 +4,7 @@
 
 
 
-The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhokseson.github.io) and aims to reproduce the simulations and plots showed in the manuscript on JCP:
+The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhokseson.github.io) and aims to reproduce the simulations and plots showed in the publication on JCP:
 > [A Haldane-Anderson Model Hamiltonian for Hyperthermal Hydrogen Scattering from a Semiconductor Surface](https://doi.org/10.1063/5.0297254) by Xuexun Lu, Nils Hertl, Sara Oregioni, Riley J Preston, Samuel Louis Rudge, Michael Thoss, Rocco Martinazzo and Reinhard J. Maurer.
 
 ### Schematic Animation of H-Atom Scattering from Ge(111)-c(2×8)
@@ -18,8 +18,23 @@ The repository is developed by [Xuexun (or Hokseon in Cantonese)](https://louhok
 
 However, this project applies a 1-D analytical model to represent the nonadiabatic effects during the scattering process. **Animation 1 is for illustrative purpose only.**
 
+### Dynamics methods
 
+In this project, we apply two mixed quantum-classical dynamics methods, Ehrenfest and Independent Electron Surface Hopping (IESH), to simulate the scattering process. The simulation parameters are listed in the [parameters_IESH.jl](/scripts/simulation_IESH/parameters_IESH.jl) and [parameters_Ehrenfest.jl](/scripts/simulation_Ehrenfest/parameters_Ehrenfest.jl) for reference.
 
+<div align="center">
+
+###### Surface hopping dynamics: Independent Electron Surface Hopping (IESH)
+</div>
+
+<sub>**The idea, in plain words.** The H atom does *not* roll on a single potential-energy curve — it lives on a whole *manifold* of curves, one for each electronic state of the surface. **Surface hopping** lets the atom randomly jump between neighbouring curves to mimic non-adiabatic energy exchange between the nucleus and the electrons. Hopping **up** loses kinetic energy to the electrons (the atom slows down); hopping **down** gives it back (the atom speeds up). Because the hops are *stochastic*, atoms launched with **identical** speed and position can take very different paths through the manifold and exit on different curves — exactly what the three coloured markers below illustrate.</sub>
+
+<p align="center">
+  <img src="docs/animation/Surface_hopping_animation_save.gif" width="400" alt="H atom scattering from Ge(111)-c(2x8) animation" />
+</p>
+<p align="center">
+  <sub><em>Animation 2. Three H-atom markers launched with identical kinetic energy from x = 4.7 Å follow different stochastic hop sequences — cyan (6 hops), yellow (3 hops), lime (0, elastic).  This illustrates the random nature of surface hopping. Schematic only.</em></sub>
+</p>
 
 ### Instructions from the author
 
