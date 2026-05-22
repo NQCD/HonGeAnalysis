@@ -24,16 +24,16 @@ In this project, we apply two mixed quantum-classical dynamics methods, Ehrenfes
 
 <div align="center">
 
-###### Surface hopping dynamics: Independent Electron Surface Hopping (IESH)
+#### Surface hopping dynamics: Independent Electron Surface Hopping (IESH)
 </div>
 
-<sub>**The idea, in plain words.** The H atom does *not* roll on a single potential-energy curve — it lives on a whole *manifold* of curves, one for each electronic state of the surface. **Surface hopping** lets the atom randomly jump between neighbouring curves to mimic non-adiabatic energy exchange between the nucleus and the electrons. Hopping **up** loses kinetic energy to the electrons (the atom slows down); hopping **down** gives it back (the atom speeds up). Because the hops are *stochastic*, atoms launched with **identical** speed and position can take very different paths through the manifold and exit on different curves — exactly what the three coloured markers below illustrate.</sub>
+**The idea, in plain words.** The H atom does *not* roll on a single potential-energy curve — it lives on a whole *manifold* of curves, one for each electronic state of the surface. **Surface hopping** lets the atom randomly jump between neighbouring curves to mimic non-adiabatic energy exchange between the nucleus and the electrons. Hopping **up** loses kinetic energy to the electrons (the atom slows down); hopping **down** gives it back (the atom speeds up). Because the hops are *stochastic*, atoms launched with **identical** speed and position can take very different paths through the manifold and exit on different curves — exactly what the three coloured markers below illustrate.
 
 <p align="center">
   <img src="docs/animation/Surface_hopping_animation_save.gif" width="400" alt="H atom scattering from Ge(111)-c(2x8) animation" />
 </p>
 <p align="center">
-  <sub><em>Animation 2. Three H-atom markers launched with identical kinetic energy from x = 4.7 Å follow different stochastic hop sequences — cyan (6 hops), yellow (3 hops), lime (0, elastic).  This illustrates the random nature of surface hopping. Schematic only.</em></sub>
+  <em>Animation 2. Three H-atom markers launched with identical kinetic energy from x = 4.7 Å follow different stochastic hop sequences — cyan (6 hops), yellow (3 hops), lime (0, elastic).  This illustrates the random nature of surface hopping. Schematic only.</em>
 </p>
 
 ### Instructions from the author
