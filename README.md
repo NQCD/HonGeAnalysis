@@ -36,6 +36,20 @@ In this project, we apply two mixed quantum-classical dynamics methods, Ehrenfes
   <em>Animation 2. Three H-atom markers launched with identical kinetic energy from x = 4.7 Å follow different stochastic hop sequences — cyan (6 hops), yellow (3 hops), lime (0, elastic).  This illustrates the random nature of surface hopping. Schematic only.</em>
 </p>
 
+<div align="center">
+
+####   Mean-field dynamics: Ehrenfest
+</div>
+
+**The idea, in plain words.** Where surface hopping picks *one* electronic curve at every instant and jumps between them stochastically, **Ehrenfest does the opposite** — the H atom follows a *single, deterministic* trajectory on a **mean-field** potential that is the population-weighted average of every reachable adiabatic state, $V_{\text{eff}}(x, t) = \sum_i |c_i(t)|^2 E_i(x)$. As the atom enters the chemisorption well — the strong non-adiabatic-coupling region — amplitude leaks from the ground state into excited states and the curve under its feet is **continuously lifted off PES 1** (see the pink envelope in Animation 3). Because total energy KE + V<sub>eff</sub> is **strictly conserved**, every bit of that lift is paid for by a loss of nuclear kinetic energy — energy that has been transferred to electronic excitation. Once the atom leaves the coupling region the populations freeze; the atom exits on a **hybridised** PES whose asymptote sits above PES 1, and the **hysteresis loop** visible in the marker's trail — going in low along the ground state, coming back out elevated — is the visual fingerprint of this mean-field energy transfer. One initial condition → one outcome; no ensemble averaging is needed.
+
+<p align="center">
+  <img src="docs/animation/Ehrenfest_animation_save.gif" width="500" alt="Ehrenfest mean-field dynamics on the 1-D H/Ge(111) adiabatic PES manifold" />
+</p>
+<p align="center">
+  <em>Animation 3. One H-atom marker (chartreuse) is launched from x = 4.7 Å on PES 1 with E<sub>total</sub> = 0.7 eV. The pink envelope is the live mean-field PES $V_{\text{eff}}(x; p(t))$ — initially overlapping PES 1, then lifted as the teal bars (electronic populations $|c_{2-7}|^2$) grow in the well. Schematic only.</em>
+</p>
+
 ### Instructions from the author
 
 ##### Activate the Julia environment
